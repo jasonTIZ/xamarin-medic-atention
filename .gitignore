@@ -1,0 +1,80 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# NuGet packages
+packages/
+*.nupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+# Rider
+.idea/
+
+# MonoDevelop / Xamarin Studio
+*.pidb
+*.booproj
+*.svd
+
+# Xamarin / Android generated files
+**/Resource.designer.cs
+**/Assets/AboutAssets.txt
+**/Resources/AboutResources.txt
+**/Obj/
+**/bin/
+
+# iOS / macOS
+*.xcworkspace
+xcuserdata/
+*.moved-aside
+DerivedData/
+.idea/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcarchive
+Carthage/Build/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Test results
+TestResult.xml
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Publish output
+*.[Pp]ublish.xml
+*.azurePubxml
+*.pubxml
+*.publishproj
+
+# NuGet restore cache
+.nuget/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Crash logs
+crash.*.log
+
+# Node (si usas alguna herramienta JS)
+node_modules/
