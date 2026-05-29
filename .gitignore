@@ -79,3 +79,26 @@ crash.*.log
 # Node (si usas alguna herramienta JS)
 node_modules/
 docs/
+
+# ASP.NET Core / .NET Web API
+publish/
+**/publish/
+*.pfx
+*.p12
+*.cer
+
+# Secrets y configuración sensible
+.env
+.env.*
+appsettings.Development.json
+appsettings.Local.json
+**/secrets.json
+
+# Entity Framework Core
+*.db
+*.db-shm
+*.db-wal
+
+# Archivos de prueba HTTP de Visual Studio
+# (comenta esta línea si quieres trackearlos)
+# *.http

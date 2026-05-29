@@ -1,0 +1,6 @@
+@MedicalAtention.API_HostAddress = http://localhost:5258
+
+GET {{MedicalAtention.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
