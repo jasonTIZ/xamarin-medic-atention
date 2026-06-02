@@ -12,6 +12,8 @@ namespace Medical_atention
         public App()
         {
             InitializeComponent();
+            // TODO: Remove before production — clears saved session to force login screen on every launch
+            SecureStorage.RemoveAll();
             MainPage = new LoginPage();
             _ = CheckExistingSessionAsync();
         }
