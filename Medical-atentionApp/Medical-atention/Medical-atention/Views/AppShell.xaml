@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Shell xmlns="http://xamarin.com/schemas/2014/forms"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:local="clr-namespace:Medical_atention"
+       x:Class="Medical_atention.Views.AppShell"
+       Shell.NavBarIsVisible="True">
+
+    <ShellContent Title="Inicio"
+                  ContentTemplate="{DataTemplate local:MainPage}" />
+
+</Shell>

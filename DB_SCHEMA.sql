@@ -1,6 +1,20 @@
 -- MySQL schema para la aplicación de atención médica rural
 -- Comentarios agregados para explicar la función de cada tabla y columna.
 
+-- Tabla de usuarios del sistema: personal médico y administrativo que accede a la app.
+CREATE TABLE IF NOT EXISTS User (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,                 -- Nombre completo del usuario
+    Email VARCHAR(150) NOT NULL UNIQUE,         -- Correo electrónico (usado para login)
+    PasswordHash VARCHAR(255) NOT NULL,         -- Hash BCrypt de la contraseña
+    Role VARCHAR(50) NOT NULL DEFAULT 'Staff',  -- Rol: Admin, Doctor, Nurse, Staff
+    CreatedAt DATETIME NOT NULL,                -- Fecha de creación del registro
+    UpdatedAt DATETIME,                         -- Fecha de última actualización
+    IsSynced TINYINT(1) NOT NULL DEFAULT 0      -- Indicador para sincronización offline
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_User_Email ON User (Email);
+
 -- Tabla de pacientes: registro básico de usuarios atendidos en el sistema.
 CREATE TABLE IF NOT EXISTS Patient (
     Id INT AUTO_INCREMENT PRIMARY KEY,
