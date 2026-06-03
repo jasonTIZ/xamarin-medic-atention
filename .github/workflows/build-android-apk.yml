@@ -65,7 +65,7 @@ jobs:
           /restore
           /t:SignAndroidPackage
           /p:Configuration=Debug
-          /p:Platform="Any CPU"
+          /p:Platform=AnyCPU
           /p:EmbedAssembliesIntoApk=true
           /p:AndroidPackageFormat=apk
 
