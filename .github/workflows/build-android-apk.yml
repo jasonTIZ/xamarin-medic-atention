@@ -1,0 +1,81 @@
+# Compila el APK de Medical-atention.Android en Windows (Xamarin clásico).
+# No modifica la estructura del repo. Descarga el artifact e instala con adb.
+
+name: Build Android APK
+
+on:
+  push:
+    paths:
+      - 'Medical-atentionApp/**'
+      - '.github/workflows/build-android-apk.yml'
+  pull_request:
+    paths:
+      - 'Medical-atentionApp/**'
+      - '.github/workflows/build-android-apk.yml'
+  workflow_dispatch:
+
+env:
+  SOLUTION_PATH: Medical-atentionApp/Medical-atentionApp.sln
+  ANDROID_PROJECT: Medical-atentionApp/Medical-atention/Medical-atention.Android/Medical-atention.Android.csproj
+  PACKAGE_NAME: com.companyname.medical_atention
+
+jobs:
+  build-apk:
+    runs-on: windows-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      - name: Install Xamarin (Visual Studio workload)
+        shell: pwsh
+        run: |
+          $installer = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
+          $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+          if (-not $vsPath) { throw "Visual Studio no encontrado en el runner." }
+          Write-Host "VS path: $vsPath"
+          & $installer modify `
+            --installPath $vsPath `
+            --add Microsoft.VisualStudio.Workload.NetCrossPlat `
+            --includeRecommended `
+            --quiet --wait --norestart
+
+      - name: Restore NuGet
+        run: nuget restore "${{ env.SOLUTION_PATH }}"
+
+      - name: Build signed APK (Debug)
+        run: >
+          msbuild "${{ env.ANDROID_PROJECT }}"
+          /restore
+          /t:SignAndroidPackage
+          /p:Configuration=Debug
+          /p:Platform="Any CPU"
+          /p:EmbedAssembliesIntoApk=true
+          /p:AndroidPackageFormat=apk
+
+      - name: List APK output
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse -Filter "*.apk" "Medical-atentionApp/Medical-atention/Medical-atention.Android/bin" | Format-Table FullName, Length
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: medical-atention-android-debug
+          path: |
+            Medical-atentionApp/Medical-atention/Medical-atention.Android/bin/Debug/*.apk
+            Medical-atentionApp/Medical-atention/Medical-atention.Android/bin/Debug/**/*.apk
+          if-no-files-found: error
