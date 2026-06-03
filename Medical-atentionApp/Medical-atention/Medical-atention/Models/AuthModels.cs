@@ -12,4 +12,10 @@ namespace Medical_atention.Models
         public string Name { get; set; }
         public string Role { get; set; }
     }
+
+    public class ChangePasswordRequest
+    {
+        public string CurrentPassword { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
+    }
 }
