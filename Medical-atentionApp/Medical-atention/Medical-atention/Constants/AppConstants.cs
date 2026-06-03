@@ -4,13 +4,13 @@ namespace Medical_atention.Constants
 {
     public static class AppConstants
     {
-        // Emulador Android → host de la laptop
+        // Android Emulator → laptop host
         public const string ApiBaseUrlEmulator = "http://10.0.2.2:5258";
 
-        // Teléfono físico (misma Wi‑Fi que la laptop)
+        // Physical device (same Wi‑Fi as laptop)
         public const string ApiBaseUrlPhysical = "http://192.168.100.54:5258";
 
-        // iOS Simulator (si aplica)
+        // iOS Simulator (if applicable)
         public const string ApiBaseUrlIosSimulator = "http://localhost:5258";
 
         public static string ApiBaseUrl
