@@ -125,7 +125,7 @@ namespace Medical_atention.ViewModels
             }
             finally
             {
-                IsLoading = false;
+                Device.BeginInvokeOnMainThread(() => IsLoading = false);
             }
         }
 

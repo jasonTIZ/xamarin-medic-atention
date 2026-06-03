@@ -10,7 +10,7 @@ namespace Medical_atention.Services
 {
     public class AuthService : IAuthService
     {
-        private static readonly HttpClient _client = new HttpClient();
+        private static readonly HttpClient _client = new HttpClient { Timeout = System.TimeSpan.FromSeconds(10) };
 
         public async Task<LoginResponse> LoginAsync(string email, string password)
         {

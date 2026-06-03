@@ -3,9 +3,27 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:local="clr-namespace:Medical_atention"
        x:Class="Medical_atention.Views.AppShell"
+       FlyoutBehavior="Flyout"
        Shell.NavBarIsVisible="True">
+
+    <Shell.FlyoutHeader>
+        <StackLayout Padding="16,40,16,16" BackgroundColor="#2196F3" Spacing="4">
+            <Label x:Name="FlyoutUserName"
+                   Text="Usuario"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="White" />
+            <Label x:Name="FlyoutUserRole"
+                   Text=""
+                   FontSize="13"
+                   TextColor="#DDEEFF" />
+        </StackLayout>
+    </Shell.FlyoutHeader>
 
     <ShellContent Title="Inicio"
                   ContentTemplate="{DataTemplate local:MainPage}" />
+
+    <MenuItem Text="Cerrar sesión"
+              Clicked="OnLogoutClicked" />
 
 </Shell>
