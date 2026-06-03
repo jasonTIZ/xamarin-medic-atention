@@ -1,0 +1,31 @@
+using Medical_atention.Constants;
+using Medical_atention.Models;
+using Newtonsoft.Json;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Medical_atention.Services
+{
+    public class AuthService : IAuthService
+    {
+        private static readonly HttpClient _client = new HttpClient();
+
+        public async Task<LoginResponse> LoginAsync(string email, string password)
+        {
+            var payload = JsonConvert.SerializeObject(new { email, password });
+            var content = new StringContent(payload, Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync(AppConstants.ApiBaseUrl + "/api/auth/login", content);
+
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+                return null;
+
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<LoginResponse>(json);
+        }
+    }
+}

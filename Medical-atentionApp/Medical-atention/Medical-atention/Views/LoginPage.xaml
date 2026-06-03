@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Medical_atention.Views.LoginPage"
+             BackgroundColor="#F0F4F8"
+             Title="">
+
+    <ScrollView>
+        <StackLayout Padding="32,60,32,32" Spacing="0">
+
+            <!-- Header -->
+            <Frame BackgroundColor="#2C7BE5" CornerRadius="40"
+                   HeightRequest="80" WidthRequest="80"
+                   HorizontalOptions="Center" HasShadow="True"
+                   Margin="0,0,0,16">
+                <Label Text="+" FontSize="52" FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Frame>
+
+            <Label Text="Sistema Médico Rural"
+                   FontSize="22" FontAttributes="Bold"
+                   TextColor="#1A365D"
+                   HorizontalOptions="Center"
+                   Margin="0,0,0,4" />
+
+            <Label Text="Ingresa con tus credenciales"
+                   FontSize="14" TextColor="#718096"
+                   HorizontalOptions="Center"
+                   Margin="0,0,0,40" />
+
+            <!-- Email -->
+            <Label Text="Correo electrónico"
+                   FontSize="13" FontAttributes="Bold"
+                   TextColor="#4A5568"
+                   Margin="0,0,0,4" />
+            <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                   Padding="12,0" HasShadow="False"
+                   BackgroundColor="White">
+                <Entry x:Name="EmailEntry"
+                       Text="{Binding Email}"
+                       Placeholder="correo@ejemplo.com"
+                       Keyboard="Email"
+                       ReturnType="Next"
+                       BackgroundColor="Transparent" />
+            </Frame>
+            <Label Text="{Binding EmailError}"
+                   TextColor="#E53E3E" FontSize="12"
+                   IsVisible="{Binding HasEmailError}"
+                   Margin="4,4,0,0" />
+
+            <!-- Password -->
+            <Label Text="Contraseña"
+                   FontSize="13" FontAttributes="Bold"
+                   TextColor="#4A5568"
+                   Margin="0,16,0,4" />
+            <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                   Padding="12,0" HasShadow="False"
+                   BackgroundColor="White">
+                <Entry Text="{Binding Password}"
+                       Placeholder="••••••••"
+                       IsPassword="True"
+                       BackgroundColor="Transparent" />
+            </Frame>
+            <Label Text="{Binding PasswordError}"
+                   TextColor="#E53E3E" FontSize="12"
+                   IsVisible="{Binding HasPasswordError}"
+                   Margin="4,4,0,0" />
+
+            <!-- General error -->
+            <Frame IsVisible="{Binding HasGeneralError}"
+                   BackgroundColor="#FFF5F5"
+                   BorderColor="#FEB2B2"
+                   CornerRadius="8"
+                   Padding="12,10"
+                   Margin="0,16,0,0"
+                   HasShadow="False">
+                <Label Text="{Binding GeneralError}"
+                       TextColor="#C53030"
+                       FontSize="14"
+                       HorizontalOptions="Center" />
+            </Frame>
+
+            <!-- Login button -->
+            <Button Text="Iniciar sesión"
+                    Command="{Binding LoginCommand}"
+                    BackgroundColor="#2C7BE5"
+                    TextColor="White"
+                    CornerRadius="8"
+                    FontAttributes="Bold"
+                    FontSize="16"
+                    HeightRequest="50"
+                    Margin="0,24,0,0" />
+
+            <!-- Loading indicator -->
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                               IsVisible="{Binding IsLoading}"
+                               Color="#2C7BE5"
+                               Margin="0,16,0,0" />
+
+        </StackLayout>
+    </ScrollView>
+
+</ContentPage>
