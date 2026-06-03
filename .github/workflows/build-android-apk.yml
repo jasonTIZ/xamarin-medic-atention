@@ -15,8 +15,8 @@ on:
   workflow_dispatch:
 
 env:
-  SOLUTION_PATH: Medical-atentionApp/Medical-atentionApp.sln
   ANDROID_PROJECT: Medical-atentionApp/Medical-atention/Medical-atention.Android/Medical-atention.Android.csproj
+  SHARED_PROJECT: Medical-atentionApp/Medical-atention/Medical-atention/Medical-atention.csproj
   PACKAGE_NAME: com.companyname.medical_atention
 
 jobs:
@@ -53,8 +53,11 @@ jobs:
             --includeRecommended `
             --quiet --wait --norestart
 
-      - name: Restore NuGet
-        run: nuget restore "${{ env.SOLUTION_PATH }}"
+      # Solo Android + biblioteca compartida (evita iOS, que no está en el runner)
+      - name: Restore NuGet (Android only)
+        run: |
+          nuget restore "${{ env.SHARED_PROJECT }}"
+          nuget restore "${{ env.ANDROID_PROJECT }}"
 
       - name: Build signed APK (Debug)
         run: >
