@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Medical_atention.Controls"
+             x:Class="Medical_atention.Views.RegisterConsultationPage"
+             BackgroundColor="#F0F4F8"
+             Title="Nueva Consulta">
+
+    <Grid>
+        <ScrollView>
+            <StackLayout Padding="24,20,24,100" Spacing="0">
+
+                <Label Text="{Binding PatientDisplayLine}"
+                       FontSize="14"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,20" />
+
+                <Label Text="Fecha y Hora de la Consulta"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,6" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="14,12" HasShadow="False"
+                       BackgroundColor="White"
+                       Margin="0,0,0,6">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackLayout Grid.Column="0" Spacing="8"
+                                     IsVisible="{Binding IsDateTimeReadOnly}">
+                            <Label Text="{Binding ConsultationDateTimeDisplay}"
+                                   FontSize="15"
+                                   TextColor="#1A365D"
+                                   VerticalOptions="Center" />
+                        </StackLayout>
+                        <Label Grid.Column="1"
+                               Text="📅"
+                               FontSize="18"
+                               VerticalOptions="Center"
+                               IsVisible="{Binding IsDateTimeReadOnly}" />
+                        <StackLayout Grid.Column="0" Grid.ColumnSpan="2"
+                                     IsVisible="{Binding IsEditingDateTime}"
+                                     Spacing="8">
+                            <DatePicker Date="{Binding ConsultationDate}"
+                                        Format="dd/MM/yyyy"
+                                        TextColor="#1A365D" />
+                            <TimePicker Time="{Binding ConsultationTime}"
+                                        TextColor="#1A365D" />
+                        </StackLayout>
+                    </Grid>
+                </Frame>
+                <Label Text="Editar fecha/hora"
+                       FontSize="13"
+                       TextColor="#2C7BE5"
+                       Margin="0,0,0,20">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ToggleEditDateTimeCommand}" />
+                    </Label.GestureRecognizers>
+                </Label>
+
+                <Label Text="Prioridad"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,8" />
+                <StackLayout Orientation="Horizontal"
+                             Spacing="8"
+                             Margin="0,0,0,20"
+                             BindableLayout.ItemsSource="{Binding PriorityOptions}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Frame BorderColor="{Binding BorderColor}"
+                                   BackgroundColor="White"
+                                   CornerRadius="20"
+                                   Padding="4,6"
+                                   HasShadow="False"
+                                   HorizontalOptions="FillAndExpand">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectCommand}"
+                                                          CommandParameter="{Binding Key}" />
+                                </Frame.GestureRecognizers>
+                                <controls:PriorityBadgeView Priority="{Binding Key}"
+                                                            Size="Small"
+                                                            HorizontalOptions="Center" />
+                            </Frame>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </StackLayout>
+
+                <StackLayout Orientation="Horizontal" Spacing="2" Margin="0,0,0,4">
+                    <Label Text="Síntomas"
+                           FontSize="13" FontAttributes="Bold"
+                           TextColor="#4A5568" />
+                    <Label Text="*"
+                           FontSize="13" FontAttributes="Bold"
+                           TextColor="#E53E3E" />
+                </StackLayout>
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="12,8" HasShadow="False"
+                       BackgroundColor="White"
+                       Margin="0,0,0,4">
+                    <Editor Text="{Binding Symptoms}"
+                            Placeholder="Describa los síntomas del paciente"
+                            AutoSize="TextChanges"
+                            MinimumHeightRequest="120"
+                            TextColor="#1A365D"
+                            PlaceholderColor="#A0AEC0"
+                            BackgroundColor="Transparent" />
+                </Frame>
+                <Label Text="{Binding SymptomsError}"
+                       TextColor="#E53E3E" FontSize="12"
+                       IsVisible="{Binding HasSymptomsError}"
+                       Margin="4,0,0,12" />
+
+                <StackLayout Orientation="Horizontal" Spacing="2" Margin="0,0,0,4">
+                    <Label Text="Diagnóstico"
+                           FontSize="13" FontAttributes="Bold"
+                           TextColor="#4A5568" />
+                    <Label Text="*"
+                           FontSize="13" FontAttributes="Bold"
+                           TextColor="#E53E3E" />
+                </StackLayout>
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="12,8" HasShadow="False"
+                       BackgroundColor="White"
+                       Margin="0,0,0,4">
+                    <Editor Text="{Binding Diagnosis}"
+                            Placeholder="Diagnóstico médico"
+                            AutoSize="TextChanges"
+                            MinimumHeightRequest="90"
+                            TextColor="#1A365D"
+                            PlaceholderColor="#A0AEC0"
+                            BackgroundColor="Transparent" />
+                </Frame>
+                <Label Text="{Binding DiagnosisError}"
+                       TextColor="#E53E3E" FontSize="12"
+                       IsVisible="{Binding HasDiagnosisError}"
+                       Margin="4,0,0,16" />
+
+                <Label Text="Tratamiento"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="12,0" HasShadow="False"
+                       BackgroundColor="White"
+                       Margin="0,0,0,16">
+                    <Entry Text="{Binding Treatment}"
+                           Placeholder="Tratamiento indicado"
+                           TextColor="#1A365D"
+                           PlaceholderColor="#A0AEC0"
+                           BackgroundColor="Transparent" />
+                </Frame>
+
+                <Label Text="Notas"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="12,8" HasShadow="False"
+                       BackgroundColor="White"
+                       Margin="0,0,0,20">
+                    <Editor Text="{Binding Notes}"
+                            Placeholder="Notas adicionales"
+                            AutoSize="TextChanges"
+                            MinimumHeightRequest="90"
+                            TextColor="#1A365D"
+                            PlaceholderColor="#A0AEC0"
+                            BackgroundColor="Transparent" />
+                </Frame>
+
+                <Frame IsVisible="{Binding HasGeneralError}"
+                       BackgroundColor="#FFF5F5"
+                       BorderColor="#FEB2B2"
+                       CornerRadius="8"
+                       Padding="12,10"
+                       Margin="0,0,0,12"
+                       HasShadow="False">
+                    <Label Text="{Binding GeneralError}"
+                           TextColor="#C53030"
+                           FontSize="14"
+                           HorizontalOptions="Center" />
+                </Frame>
+
+                <Button Text="GUARDAR CONSULTA"
+                        Command="{Binding RegisterCommand}"
+                        BackgroundColor="#2C7BE5"
+                        TextColor="White"
+                        CornerRadius="8"
+                        FontAttributes="Bold"
+                        FontSize="15"
+                        HeightRequest="52"
+                        CharacterSpacing="0.5" />
+
+                <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                   IsVisible="{Binding IsLoading}"
+                                   Color="#2C7BE5"
+                                   Margin="0,16,0,0" />
+
+            </StackLayout>
+        </ScrollView>
+
+        <Frame IsVisible="{Binding ShowOfflineIndicator}"
+               BackgroundColor="White"
+               BorderColor="#CBD5E0"
+               CornerRadius="24"
+               Padding="10"
+               HasShadow="True"
+               WidthRequest="48"
+               HeightRequest="48"
+               VerticalOptions="End"
+               HorizontalOptions="End"
+               Margin="0,0,20,24">
+            <Label Text="☁🕐"
+                   FontSize="16"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" />
+        </Frame>
+
+        <Frame IsVisible="{Binding IsSnackbarVisible}"
+               BackgroundColor="#323232"
+               CornerRadius="8"
+               Padding="16,12"
+               Margin="20,0,20,88"
+               HasShadow="True"
+               VerticalOptions="End"
+               HorizontalOptions="Fill">
+            <Label Text="{Binding SnackbarMessage}"
+                   TextColor="White"
+                   FontSize="14"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center" />
+        </Frame>
+    </Grid>
+
+</ContentPage>

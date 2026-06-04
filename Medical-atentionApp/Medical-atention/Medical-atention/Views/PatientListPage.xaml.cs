@@ -104,7 +104,12 @@ namespace Medical_atention.Views
             var patient = _menuPatient;
             CloseMenu();
             if (patient != null)
-                await Shell.Current.GoToAsync($"{nameof(ConsultationDetailPage)}?patientId={patient.Id}&priority={patient.Priority}");
+            {
+                var name = Uri.EscapeDataString(patient.FullName);
+                var cedula = Uri.EscapeDataString(patient.IdentificationNumber ?? string.Empty);
+                await Shell.Current.GoToAsync(
+                    $"{nameof(RegisterConsultationPage)}?patientId={patient.Id}&patientName={name}&patientCedula={cedula}");
+            }
         }
 
         private async void OnMenuDelete(object sender, EventArgs e)
