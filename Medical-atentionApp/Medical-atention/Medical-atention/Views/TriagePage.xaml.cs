@@ -66,7 +66,7 @@ namespace Medical_atention.Views
 
         private TriagePatientItem GetItemFromView(Element element)
         {
-            var view = element as BindableObject;
+            var view = element;
             while (view != null)
             {
                 if (view.BindingContext is TriagePatientItem item)
