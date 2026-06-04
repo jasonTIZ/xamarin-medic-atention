@@ -1,4 +1,5 @@
 using Medical_atention.Constants;
+using Medical_atention.Helpers;
 using Medical_atention.Views;
 using System;
 using System.Threading.Tasks;
@@ -12,8 +13,6 @@ namespace Medical_atention
         public App()
         {
             InitializeComponent();
-            // TODO: Remove before production — clears saved session to force login screen on every launch
-            SecureStorage.RemoveAll();
             MainPage = new LoginPage();
             _ = CheckExistingSessionAsync();
         }
@@ -23,12 +22,16 @@ namespace Medical_atention
             try
             {
                 var token = await SecureStorage.GetAsync(AppConstants.TokenKey);
-                if (!string.IsNullOrEmpty(token))
+                if (!string.IsNullOrEmpty(token) && JwtHelper.IsTokenValid(token))
                 {
                     Device.BeginInvokeOnMainThread(() =>
                     {
                         MainPage = new AppShell();
                     });
+                }
+                else if (!string.IsNullOrEmpty(token))
+                {
+                    SecureStorage.RemoveAll();
                 }
             }
             catch (Exception)
