@@ -12,6 +12,8 @@ namespace Medical_atention.Converters
         {
             if (value is PriorityLevel level)
                 return PriorityHelper.GetBadgeColor(level);
+            if (value is int i)
+                return PriorityHelper.GetBadgeColor((PriorityLevel)i);
             return Color.FromHex("#718096");
         }
 

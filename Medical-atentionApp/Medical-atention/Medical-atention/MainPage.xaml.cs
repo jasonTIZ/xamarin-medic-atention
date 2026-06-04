@@ -22,10 +22,10 @@ namespace Medical_atention
 
         private async void OnPatientSelected(object sender, SelectionChangedEventArgs e)
         {
-            if (e.CurrentSelection.FirstOrDefault() is PatientResponseDto patient)
+            if (e.CurrentSelection.FirstOrDefault() is Patient patient)
             {
                 ((CollectionView)sender).SelectedItem = null;
-                await Shell.Current.GoToAsync($"{nameof(PatientDetailPage)}?id={patient.Id}");
+                await Shell.Current.GoToAsync($"patientdetail?patientId={patient.Id}");
             }
         }
 

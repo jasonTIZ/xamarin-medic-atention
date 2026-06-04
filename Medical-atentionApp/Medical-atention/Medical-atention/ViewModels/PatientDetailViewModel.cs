@@ -1,55 +1,47 @@
-using Medical_atention.Constants;
 using Medical_atention.Models;
 using Medical_atention.Services;
-using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
-using Xamarin.Forms;
 
 namespace Medical_atention.ViewModels
 {
     public class PatientDetailViewModel : INotifyPropertyChanged
     {
         private readonly IPatientService _patientService;
-        private PatientResponseDto _patient;
-        private bool _isLoading;
+        private Patient _patient;
+        private bool _isLoading = true;
 
-        public PatientDetailViewModel(int id) : this(id, new PatientService()) { }
+        public PatientDetailViewModel() : this(new PatientService()) { }
 
-        public PatientDetailViewModel(int id, IPatientService patientService)
+        public PatientDetailViewModel(IPatientService patientService)
         {
             _patientService = patientService;
-            _ = LoadPatientAsync(id);
         }
 
-        public PatientResponseDto Patient
+        public Patient Patient
         {
             get => _patient;
-            set { _patient = value; OnPropertyChanged(); }
+            set { _patient = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasPatient)); }
         }
 
+        public bool HasPatient => Patient != null;
         public bool IsLoading
         {
             get => _isLoading;
-            set { _isLoading = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsNotLoading)); }
+            set { _isLoading = value; OnPropertyChanged(); }
         }
 
-        public bool IsNotLoading => !_isLoading;
-
-        private async Task LoadPatientAsync(int id)
+        public async Task LoadAsync(int patientId)
         {
             IsLoading = true;
             try
             {
-                var patient = await _patientService.GetPatientAsync(id, await SecureStorage.GetAsync(AppConstants.TokenKey));
-                Device.BeginInvokeOnMainThread(() => Patient = patient);
+                Patient = await _patientService.GetPatientAsync(patientId);
             }
-            catch (Exception) { }
             finally
             {
-                Device.BeginInvokeOnMainThread(() => IsLoading = false);
+                IsLoading = false;
             }
         }
 

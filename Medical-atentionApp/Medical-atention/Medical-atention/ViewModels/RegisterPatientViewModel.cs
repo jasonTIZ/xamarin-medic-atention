@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Medical_atention.ViewModels
@@ -191,8 +190,7 @@ namespace Medical_atention.ViewModels
                     Gender = _selectedGender
                 };
 
-                var (patient, error) = await _patientService.RegisterAsync(
-                    request, await SecureStorage.GetAsync(AppConstants.TokenKey));
+                var (patient, error) = await _patientService.RegisterAsync(request);
 
                 if (error != null)
                 {
@@ -209,10 +207,11 @@ namespace Medical_atention.ViewModels
                     IsSnackbarVisible = true;
                 });
 
+                var patientId = patient.Id;
                 Device.StartTimer(TimeSpan.FromSeconds(2), () =>
                 {
                     Device.BeginInvokeOnMainThread(async () =>
-                        await Shell.Current.GoToAsync($"{nameof(PatientDetailPage)}?id={patient.Id}"));
+                        await Shell.Current.GoToAsync($"patientdetail?patientId={patientId}"));
                     return false;
                 });
             }

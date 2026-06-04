@@ -6,11 +6,19 @@ namespace Medical_atention.Services
 {
     public interface IPatientService
     {
-        Task<(PatientResponseDto patient, string error)> RegisterAsync(PatientRequestDto request, string token);
-        Task<PatientResponseDto> GetPatientAsync(int id, string token);
-        Task<List<PatientResponseDto>> GetAllPatientsAsync(string token);
-        Task<(List<PatientResponseDto> patients, bool fromCache, string error)> GetPatientsByPriorityAsync(string token);
-        Task<(bool success, string error)> UpdatePriorityAsync(int id, PriorityLevel priority, string token);
-        Task SyncPendingPriorityChangesAsync(string token);
+        bool IsOnline();
+
+        // ── Listado y detalle ──────────────────────────────────────────────────
+        Task<IReadOnlyList<Patient>> LoadPatientsAsync(bool forceRefresh = false);
+        Task<Patient> GetPatientAsync(int id);
+
+        // ── Registro ──────────────────────────────────────────────────────────
+        // Recibe el DTO del formulario, devuelve el modelo de dominio o un error.
+        Task<(Patient patient, string error)> RegisterAsync(PatientRequestDto request);
+
+        // ── Triaje ────────────────────────────────────────────────────────────
+        Task<(IReadOnlyList<Patient> patients, bool fromCache, string error)> GetPatientsByPriorityAsync();
+        Task<(bool success, string error)> UpdatePriorityAsync(int id, PriorityLevel priority);
+        Task SyncPendingPriorityChangesAsync();
     }
 }

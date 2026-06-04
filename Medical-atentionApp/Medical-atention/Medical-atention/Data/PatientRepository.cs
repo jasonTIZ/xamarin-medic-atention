@@ -7,84 +7,104 @@ namespace Medical_atention.Data
 {
     public class PatientRepository
     {
-        public async Task<List<PatientResponseDto>> GetAllSortedByPriorityAsync()
+        public async Task<List<Patient>> GetAllAsync()
         {
-            var db = await LocalDatabase.Instance.GetConnectionAsync();
-            var entities = await db.Table<PatientEntity>().ToListAsync();
-            return entities
-                .Select(e => e.ToDto())
-                .OrderBy(p => (int)p.Priority)
-                .ThenBy(p => p.LastName)
-                .ThenBy(p => p.Name)
+            await LocalDatabase.InitializeAsync();
+            var list = await LocalDatabase.Connection.Table<Patient>().ToListAsync();
+            return list
+                .OrderBy(p => p.LastName)
+                .ThenBy(p => p.FirstName)
                 .ToList();
         }
 
-        public async Task ReplaceAllAsync(IEnumerable<PatientResponseDto> patients)
+        public async Task<List<Patient>> GetAllSortedByPriorityAsync()
         {
-            var db = await LocalDatabase.Instance.GetConnectionAsync();
-            var pending = await db.Table<PatientEntity>().Where(e => e.PendingPrioritySync).ToListAsync();
-            var pendingById = pending.ToDictionary(e => e.Id);
+            await LocalDatabase.InitializeAsync();
+            var list = await LocalDatabase.Connection.Table<Patient>().ToListAsync();
+            return list
+                .OrderBy(p => p.EffectivePriority)
+                .ThenBy(p => p.LastName)
+                .ThenBy(p => p.FirstName)
+                .ToList();
+        }
 
-            await db.RunInTransactionAsync(conn =>
+        public async Task ReplaceAllAsync(IEnumerable<Patient> patients)
+        {
+            await LocalDatabase.InitializeAsync();
+            var pending = await LocalDatabase.Connection
+                .Table<Patient>()
+                .Where(p => p.PendingPrioritySync)
+                .ToListAsync();
+            var pendingById = pending.ToDictionary(p => p.Id);
+
+            await LocalDatabase.Connection.RunInTransactionAsync(conn =>
             {
-                conn.DeleteAll<PatientEntity>();
-                foreach (var dto in patients)
+                conn.DeleteAll<Patient>();
+                foreach (var patient in patients)
                 {
-                    var entity = PatientEntity.FromDto(dto);
-                    if (pendingById.TryGetValue(dto.Id, out var p))
+                    if (pendingById.TryGetValue(patient.Id, out var p))
                     {
-                        entity.PendingPrioritySync = true;
-                        entity.PendingPriority = p.PendingPriority;
-                        entity.Priority = p.Priority;
+                        patient.PendingPrioritySync = true;
+                        patient.PendingPriority = p.PendingPriority;
+                        patient.Priority = p.Priority;
                     }
-                    conn.Insert(entity);
+                    conn.Insert(patient);
                 }
             });
         }
 
-        public async Task UpsertAsync(PatientResponseDto dto)
+        public async Task UpsertAsync(Patient patient)
         {
-            var db = await LocalDatabase.Instance.GetConnectionAsync();
-            var entity = PatientEntity.FromDto(dto);
-            var existing = await db.FindAsync<PatientEntity>(dto.Id);
+            await LocalDatabase.InitializeAsync();
+            var existing = await LocalDatabase.Connection.FindAsync<Patient>(patient.Id);
             if (existing == null)
-                await db.InsertAsync(entity);
+                await LocalDatabase.Connection.InsertAsync(patient);
             else
             {
-                entity.PendingPrioritySync = existing.PendingPrioritySync;
-                entity.PendingPriority = existing.PendingPriority;
-                await db.UpdateAsync(entity);
+                patient.PendingPrioritySync = existing.PendingPrioritySync;
+                patient.PendingPriority = existing.PendingPriority;
+                await LocalDatabase.Connection.UpdateAsync(patient);
             }
+        }
+
+        public async Task<Patient> GetByIdAsync(int id)
+        {
+            await LocalDatabase.InitializeAsync();
+            return await LocalDatabase.Connection
+                .Table<Patient>()
+                .Where(p => p.Id == id)
+                .FirstOrDefaultAsync();
         }
 
         public async Task SetPendingPriorityAsync(int id, PriorityLevel priority)
         {
-            var db = await LocalDatabase.Instance.GetConnectionAsync();
-            var entity = await db.FindAsync<PatientEntity>(id);
-            if (entity == null) return;
+            await LocalDatabase.InitializeAsync();
+            var patient = await LocalDatabase.Connection.FindAsync<Patient>(id);
+            if (patient == null) return;
 
-            entity.PendingPrioritySync = true;
-            entity.PendingPriority = (int)priority;
-            await db.UpdateAsync(entity);
+            patient.PendingPrioritySync = true;
+            patient.PendingPriority = (int)priority;
+            await LocalDatabase.Connection.UpdateAsync(patient);
         }
 
         public async Task ClearPendingPriorityAsync(int id, PriorityLevel syncedPriority)
         {
-            var db = await LocalDatabase.Instance.GetConnectionAsync();
-            var entity = await db.FindAsync<PatientEntity>(id);
-            if (entity == null) return;
+            await LocalDatabase.InitializeAsync();
+            var patient = await LocalDatabase.Connection.FindAsync<Patient>(id);
+            if (patient == null) return;
 
-            entity.Priority = (int)syncedPriority;
-            entity.PendingPrioritySync = false;
-            entity.PendingPriority = null;
-            await db.UpdateAsync(entity);
+            patient.Priority = (int)syncedPriority;
+            patient.PendingPrioritySync = false;
+            patient.PendingPriority = null;
+            await LocalDatabase.Connection.UpdateAsync(patient);
         }
 
-        public async Task<List<PatientEntity>> GetPendingPriorityUpdatesAsync()
+        public async Task<List<Patient>> GetPendingPriorityUpdatesAsync()
         {
-            var db = await LocalDatabase.Instance.GetConnectionAsync();
-            return await db.Table<PatientEntity>()
-                .Where(e => e.PendingPrioritySync)
+            await LocalDatabase.InitializeAsync();
+            return await LocalDatabase.Connection
+                .Table<Patient>()
+                .Where(p => p.PendingPrioritySync)
                 .ToListAsync();
         }
     }

@@ -36,15 +36,15 @@ namespace Medical_atention.ViewModels
         public Color PriorityColor => PriorityHelper.GetBadgeColor(Priority);
         public string LastConsultationText => PriorityHelper.FormatTimeSinceLastConsultation(LastConsultationAt);
 
-        public static TriagePatientItem FromDto(PatientResponseDto dto) =>
+        public static TriagePatientItem FromPatient(Patient patient) =>
             new TriagePatientItem
             {
-                Id = dto.Id,
-                Name = dto.Name,
-                LastName = dto.LastName,
-                IdentificationNumber = dto.IdentificationNumber,
-                Priority = dto.Priority,
-                LastConsultationAt = dto.LastConsultationAt
+                Id = patient.Id,
+                Name = patient.FirstName,
+                LastName = patient.LastName,
+                IdentificationNumber = patient.DocumentNumber,
+                Priority = patient.EffectivePriority,
+                LastConsultationAt = patient.LastConsultationAt
             };
 
         public event PropertyChangedEventHandler PropertyChanged;

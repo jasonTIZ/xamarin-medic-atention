@@ -1,4 +1,3 @@
-using Medical_atention.Constants;
 using Medical_atention.Models;
 using Medical_atention.Services;
 using System;
@@ -7,14 +6,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
 
 namespace Medical_atention.ViewModels
 {
     public class PatientsViewModel : INotifyPropertyChanged
     {
         private readonly IPatientService _patientService;
-        private ObservableCollection<PatientResponseDto> _patients = new ObservableCollection<PatientResponseDto>();
+        private ObservableCollection<Patient> _patients = new ObservableCollection<Patient>();
         private bool _isLoading;
         private bool _isEmpty;
 
@@ -25,7 +23,7 @@ namespace Medical_atention.ViewModels
             _patientService = patientService;
         }
 
-        public ObservableCollection<PatientResponseDto> Patients
+        public ObservableCollection<Patient> Patients
         {
             get => _patients;
             set { _patients = value; OnPropertyChanged(); }
@@ -48,8 +46,8 @@ namespace Medical_atention.ViewModels
             IsLoading = true;
             try
             {
-                Patients = new ObservableCollection<PatientResponseDto>(
-                    await _patientService.GetAllPatientsAsync(await SecureStorage.GetAsync(AppConstants.TokenKey)));
+                var list = await _patientService.LoadPatientsAsync();
+                Patients = new ObservableCollection<Patient>(list);
                 IsEmpty = !Patients.Any();
             }
             catch (Exception) { }

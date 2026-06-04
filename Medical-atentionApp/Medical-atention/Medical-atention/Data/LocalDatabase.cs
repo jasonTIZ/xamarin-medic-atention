@@ -1,27 +1,37 @@
+using Medical_atention.Models;
 using SQLite;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Medical_atention.Data
 {
-    public class LocalDatabase
+    public static class LocalDatabase
     {
-        private static readonly Lazy<LocalDatabase> _instance = new Lazy<LocalDatabase>(() => new LocalDatabase());
-        private SQLiteAsyncConnection _connection;
+        private static SQLiteAsyncConnection _connection;
+        private static bool _initialized;
 
-        public static LocalDatabase Instance => _instance.Value;
-
-        public async Task<SQLiteAsyncConnection> GetConnectionAsync()
+        public static SQLiteAsyncConnection Connection
         {
-            if (_connection != null) return _connection;
+            get
+            {
+                if (_connection == null)
+                {
+                    var path = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                        "medical_atention_local.db3");
+                    _connection = new SQLiteAsyncConnection(path);
+                }
 
-            var path = System.IO.Path.Combine(
-                Xamarin.Essentials.FileSystem.AppDataDirectory,
-                "medical_atention.db3");
+                return _connection;
+            }
+        }
 
-            _connection = new SQLiteAsyncConnection(path);
-            await _connection.CreateTableAsync<Models.PatientEntity>();
-            return _connection;
+        public static async Task InitializeAsync()
+        {
+            if (_initialized) return;
+            await Connection.CreateTableAsync<Patient>();
+            _initialized = true;
         }
     }
 }

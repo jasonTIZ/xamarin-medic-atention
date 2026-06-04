@@ -9,7 +9,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Medical_atention.ViewModels
@@ -102,10 +101,9 @@ namespace Medical_atention.ViewModels
             if (!silent) IsLoading = true;
             try
             {
-                var token = await SecureStorage.GetAsync(AppConstants.TokenKey);
-                await _patientService.SyncPendingPriorityChangesAsync(token);
+                await _patientService.SyncPendingPriorityChangesAsync();
 
-                var (patients, fromCache, error) = await _patientService.GetPatientsByPriorityAsync(token);
+                var (patients, fromCache, error) = await _patientService.GetPatientsByPriorityAsync();
 
                 IsOffline = fromCache || Connectivity.NetworkAccess != NetworkAccess.Internet;
                 await UpdateLastSyncTextAsync(fromCache);
@@ -138,8 +136,7 @@ namespace Medical_atention.ViewModels
             var previous = item.Priority;
             MoveItemToGroup(item, newPriority);
 
-            var token = await SecureStorage.GetAsync(AppConstants.TokenKey);
-            var (success, error) = await _patientService.UpdatePriorityAsync(item.Id, newPriority, token);
+            var (success, error) = await _patientService.UpdatePriorityAsync(item.Id, newPriority);
 
             if (!success)
             {
@@ -167,14 +164,14 @@ namespace Medical_atention.ViewModels
                 target.Add(item);
         }
 
-        private void RebuildGroups(IEnumerable<PatientResponseDto> patients)
+        private void RebuildGroups(IReadOnlyList<Patient> patients)
         {
             foreach (var group in Groups)
                 group.Clear();
 
-            foreach (var dto in patients)
+            foreach (var patient in patients)
             {
-                var item = TriagePatientItem.FromDto(dto);
+                var item = TriagePatientItem.FromPatient(patient);
                 var group = Groups.FirstOrDefault(g => g.Level == item.Priority);
                 if (group != null)
                     group.Add(item);

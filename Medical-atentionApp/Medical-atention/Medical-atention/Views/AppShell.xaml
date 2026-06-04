@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Shell xmlns="http://xamarin.com/schemas/2014/forms"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-       xmlns:local="clr-namespace:Medical_atention"
        xmlns:views="clr-namespace:Medical_atention.Views"
        x:Class="Medical_atention.Views.AppShell"
        FlyoutBehavior="Flyout"
@@ -22,13 +21,16 @@
     </Shell.FlyoutHeader>
 
     <ShellContent Title="Pacientes"
-                  ContentTemplate="{DataTemplate local:MainPage}" />
+                  ContentTemplate="{DataTemplate views:PatientListPage}"
+                  Route="patients" />
 
     <ShellContent Title="Triaje"
-                  ContentTemplate="{DataTemplate views:TriagePage}" />
+                  ContentTemplate="{DataTemplate views:TriagePage}"
+                  Route="triage" />
 
     <ShellContent Title="Perfil"
-                  ContentTemplate="{DataTemplate views:ProfilePage}" />
+                  ContentTemplate="{DataTemplate views:ProfilePage}"
+                  Route="profile" />
 
     <MenuItem Text="Cerrar sesión"
               Clicked="OnLogoutClicked" />

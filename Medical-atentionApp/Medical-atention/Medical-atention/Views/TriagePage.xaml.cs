@@ -117,12 +117,7 @@ namespace Medical_atention.Views
             var item = GetItemFromView(sender as Element);
             if (item == null) return;
 
-            await DisplayAlert(
-                "Registrar consulta",
-                "El registro de consultas se implementará en una tarea posterior. Se abre el detalle del paciente.",
-                "Continuar");
-
-            await Shell.Current.GoToAsync($"{nameof(PatientDetailPage)}?id={item.Id}");
+            await Shell.Current.GoToAsync($"patientdetail?patientId={item.Id}");
         }
     }
 }

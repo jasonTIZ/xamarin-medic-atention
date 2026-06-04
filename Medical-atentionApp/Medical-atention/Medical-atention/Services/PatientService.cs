@@ -1,73 +1,113 @@
-using Medical_atention.Constants;
 using Medical_atention.Data;
+using Medical_atention.Helpers;
 using Medical_atention.Models;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
+using Xamarin.Forms;
 
 namespace Medical_atention.Services
 {
     public class PatientService : IPatientService
     {
         private static readonly HttpMethod PatchMethod = new HttpMethod("PATCH");
-        private static readonly HttpClient _client = new HttpClient { Timeout = System.TimeSpan.FromSeconds(10) };
         private readonly PatientRepository _repository = new PatientRepository();
 
-        public async Task<(PatientResponseDto patient, string error)> RegisterAsync(PatientRequestDto request, string token)
+        // ── Conectividad ──────────────────────────────────────────────────────
+
+        public bool IsOnline() =>
+            Connectivity.NetworkAccess == NetworkAccess.Internet;
+
+        // ── Listado ───────────────────────────────────────────────────────────
+
+        public async Task<IReadOnlyList<Patient>> LoadPatientsAsync(bool forceRefresh = false)
         {
-            var message = BuildRequest(HttpMethod.Post, "/api/patients", token);
-            message.Content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
-
-            var response = await _client.SendAsync(message);
-
-            if (response.StatusCode == HttpStatusCode.Conflict)
-                return (null, "Ya existe un paciente con esta cédula");
-
-            if (!response.IsSuccessStatusCode)
-                return (null, "Error al registrar el paciente");
-
-            var patient = JsonConvert.DeserializeObject<PatientResponseDto>(await response.Content.ReadAsStringAsync());
-            await _repository.UpsertAsync(patient);
-            return (patient, null);
-        }
-
-        public async Task<PatientResponseDto> GetPatientAsync(int id, string token)
-        {
-            var response = await _client.SendAsync(BuildRequest(HttpMethod.Get, $"/api/patients/{id}", token));
-            if (!response.IsSuccessStatusCode) return null;
-            return JsonConvert.DeserializeObject<PatientResponseDto>(await response.Content.ReadAsStringAsync());
-        }
-
-        public async Task<List<PatientResponseDto>> GetAllPatientsAsync(string token)
-        {
-            var response = await _client.SendAsync(BuildRequest(HttpMethod.Get, "/api/patients", token));
-            if (!response.IsSuccessStatusCode) return new List<PatientResponseDto>();
-            return JsonConvert.DeserializeObject<List<PatientResponseDto>>(await response.Content.ReadAsStringAsync());
-        }
-
-        public async Task<(List<PatientResponseDto> patients, bool fromCache, string error)> GetPatientsByPriorityAsync(string token)
-        {
-            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+            if (IsOnline())
             {
                 try
                 {
-                    var response = await _client.SendAsync(
-                        BuildRequest(HttpMethod.Get, "/api/patients?sort=priority", token));
-
-                    if (response.IsSuccessStatusCode)
+                    var remote = await FetchPatientsFromApiAsync("api/patients");
+                    if (remote.Count > 0)
                     {
-                        var patients = JsonConvert.DeserializeObject<List<PatientResponseDto>>(
-                            await response.Content.ReadAsStringAsync());
-                        await _repository.ReplaceAllAsync(patients);
+                        await _repository.ReplaceAllAsync(remote);
+                        return remote;
+                    }
+                }
+                catch (Exception)
+                {
+                    if (!forceRefresh)
+                        return await _repository.GetAllAsync();
+                    throw;
+                }
+            }
+
+            return await _repository.GetAllAsync();
+        }
+
+        public async Task<Patient> GetPatientAsync(int id)
+        {
+            var local = await _repository.GetByIdAsync(id);
+            if (local != null) return local;
+
+            var all = await LoadPatientsAsync();
+            return all.FirstOrDefault(p => p.Id == id);
+        }
+
+        // ── Registro ──────────────────────────────────────────────────────────
+
+        public async Task<(Patient patient, string error)> RegisterAsync(PatientRequestDto request)
+        {
+            try
+            {
+                using (var client = await ApiClient.CreateAsync())
+                {
+                    var content = new StringContent(
+                        JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+
+                    var response = await client.PostAsync("api/patients", content);
+
+                    if (response.StatusCode == HttpStatusCode.Conflict)
+                        return (null, "Ya existe un paciente con esta cédula");
+
+                    if (!response.IsSuccessStatusCode)
+                        return (null, "Error al registrar el paciente");
+
+                    var dto = JsonConvert.DeserializeObject<PatientResponseDto>(
+                        await response.Content.ReadAsStringAsync());
+
+                    var patient = MapToPatient(dto);
+                    await _repository.UpsertAsync(patient);
+                    return (patient, null);
+                }
+            }
+            catch (Exception)
+            {
+                return (null, "Sin conexión, verifica tu red");
+            }
+        }
+
+        // ── Triaje ────────────────────────────────────────────────────────────
+
+        public async Task<(IReadOnlyList<Patient> patients, bool fromCache, string error)> GetPatientsByPriorityAsync()
+        {
+            if (IsOnline())
+            {
+                try
+                {
+                    var remote = await FetchPatientsFromApiAsync("api/patients?sort=priority");
+                    if (remote.Count > 0)
+                    {
+                        await _repository.ReplaceAllAsync(remote);
                         await SecureStorage.SetAsync(
-                            AppConstants.LastPatientSyncKey,
-                            System.DateTime.UtcNow.ToString("o"));
-                        return (patients, false, null);
+                            Constants.AppConstants.LastPatientSyncKey,
+                            DateTime.UtcNow.ToString("o"));
+                        return (remote, false, null);
                     }
                 }
                 catch { }
@@ -77,32 +117,39 @@ namespace Medical_atention.Services
             if (cached.Count > 0)
                 return (cached, true, null);
 
-            return (new List<PatientResponseDto>(), true, "Sin conexión y sin datos locales");
+            return (new List<Patient>(), true, "Sin conexión y sin datos locales");
         }
 
-        public async Task<(bool success, string error)> UpdatePriorityAsync(int id, PriorityLevel priority, string token)
+        public async Task<(bool success, string error)> UpdatePriorityAsync(int id, PriorityLevel priority)
         {
-            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+            if (IsOnline())
             {
                 try
                 {
-                    var message = BuildRequest(PatchMethod, $"/api/patients/{id}/priority", token);
-                    message.Content = new StringContent(
-                        JsonConvert.SerializeObject(new UpdatePatientPriorityRequest { Priority = priority }),
-                        Encoding.UTF8,
-                        "application/json");
-
-                    var response = await _client.SendAsync(message);
-                    if (response.IsSuccessStatusCode)
+                    using (var client = await ApiClient.CreateAsync())
                     {
-                        var updated = JsonConvert.DeserializeObject<PatientResponseDto>(
-                            await response.Content.ReadAsStringAsync());
-                        await _repository.ClearPendingPriorityAsync(id, updated.Priority);
-                        await _repository.UpsertAsync(updated);
-                        return (true, null);
-                    }
+                        var content = new StringContent(
+                            JsonConvert.SerializeObject(new UpdatePatientPriorityRequest { Priority = priority }),
+                            Encoding.UTF8,
+                            "application/json");
 
-                    return (false, "No se pudo actualizar la prioridad");
+                        var req = new HttpRequestMessage(PatchMethod, $"api/patients/{id}/priority")
+                        {
+                            Content = content
+                        };
+                        var response = await client.SendAsync(req);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var dto = JsonConvert.DeserializeObject<PatientResponseDto>(
+                                await response.Content.ReadAsStringAsync());
+                            await _repository.ClearPendingPriorityAsync(id, dto.Priority);
+                            await _repository.UpsertAsync(MapToPatient(dto));
+                            return (true, null);
+                        }
+
+                        return (false, "No se pudo actualizar la prioridad");
+                    }
                 }
                 catch
                 {
@@ -114,26 +161,49 @@ namespace Medical_atention.Services
             return (true, null);
         }
 
-        public async Task SyncPendingPriorityChangesAsync(string token)
+        public async Task SyncPendingPriorityChangesAsync()
         {
-            if (Connectivity.NetworkAccess != NetworkAccess.Internet) return;
+            if (!IsOnline()) return;
 
             var pending = await _repository.GetPendingPriorityUpdatesAsync();
-            foreach (var entity in pending)
+            foreach (var patient in pending)
             {
-                if (!entity.PendingPriority.HasValue) continue;
-                var priority = (PriorityLevel)entity.PendingPriority.Value;
-                var result = await UpdatePriorityAsync(entity.Id, priority, token);
-                if (result.success)
-                    await _repository.ClearPendingPriorityAsync(entity.Id, priority);
+                if (!patient.PendingPriority.HasValue) continue;
+                var priority = (PriorityLevel)patient.PendingPriority.Value;
+                var (success, _) = await UpdatePriorityAsync(patient.Id, priority);
+                if (success)
+                    await _repository.ClearPendingPriorityAsync(patient.Id, priority);
             }
         }
 
-        private static HttpRequestMessage BuildRequest(HttpMethod method, string path, string token)
+        // ── Mapeo DTO → dominio (responsabilidad exclusiva de la capa de servicio) ──
+
+        private static Patient MapToPatient(PatientResponseDto dto) =>
+            new Patient
+            {
+                Id = dto.Id,
+                FirstName = dto.Name ?? string.Empty,
+                LastName = dto.LastName ?? string.Empty,
+                DocumentNumber = dto.IdentificationNumber ?? string.Empty,
+                Priority = (int)dto.Priority,
+                LastConsultationAt = dto.LastConsultationAt,
+                PendingPrioritySync = false,
+                PendingPriority = null
+            };
+
+        private static async Task<List<Patient>> FetchPatientsFromApiAsync(string path)
         {
-            var request = new HttpRequestMessage(method, AppConstants.ApiBaseUrl + path);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            return request;
+            using (var client = await ApiClient.CreateAsync())
+            {
+                var response = await client.GetAsync(path);
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+                var dtos = JsonConvert.DeserializeObject<List<PatientResponseDto>>(json)
+                    ?? new List<PatientResponseDto>();
+
+                return dtos.Select(MapToPatient).ToList();
+            }
         }
     }
 }
