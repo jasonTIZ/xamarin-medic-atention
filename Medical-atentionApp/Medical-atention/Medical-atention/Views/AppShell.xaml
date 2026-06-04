@@ -2,6 +2,7 @@
 <Shell xmlns="http://xamarin.com/schemas/2014/forms"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:local="clr-namespace:Medical_atention"
+       xmlns:views="clr-namespace:Medical_atention.Views"
        x:Class="Medical_atention.Views.AppShell"
        FlyoutBehavior="Flyout"
        Shell.NavBarIsVisible="True">
@@ -22,6 +23,9 @@
 
     <ShellContent Title="Inicio"
                   ContentTemplate="{DataTemplate local:MainPage}" />
+
+    <ShellContent Title="Perfil"
+                  ContentTemplate="{DataTemplate views:ProfilePage}" />
 
     <MenuItem Text="Cerrar sesión"
               Clicked="OnLogoutClicked" />

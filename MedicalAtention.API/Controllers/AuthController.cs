@@ -1,6 +1,7 @@
 using MedicalAtention.API.Data;
 using MedicalAtention.API.DTOs;
 using MedicalAtention.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -23,6 +24,25 @@ public class AuthController(AppDbContext db, IConfiguration config) : Controller
 
         var token = GenerateToken(user);
         return Ok(new LoginResponse(token, new UserDto(user.Id, user.Name, user.Role)));
+    }
+
+    [Authorize]
+    [HttpPut("password")]
+    public IActionResult ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        var user = db.Users.Find(userId);
+        if (user is null || !BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
+            return Unauthorized(new { message = "La contraseña actual es incorrecta" });
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        user.UpdatedAt = DateTime.UtcNow;
+        db.SaveChanges();
+
+        return Ok(new { message = "Contraseña actualizada" });
     }
 
     private string GenerateToken(User user)
