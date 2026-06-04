@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Medical_atention.ViewModels"
+             x:Class="Medical_atention.Views.PatientDetailPage"
+             Title="Detalle del paciente"
+             BackgroundColor="#F0F4F8">
+
+    <ContentPage.BindingContext>
+        <vm:PatientDetailViewModel />
+    </ContentPage.BindingContext>
+
+    <ScrollView>
+        <StackLayout Padding="24" Spacing="16">
+
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                               IsVisible="{Binding IsLoading}"
+                               Color="#2C7BE5"
+                               HorizontalOptions="Center" />
+
+            <StackLayout IsVisible="{Binding HasPatient}" Spacing="12">
+                <Label Text="{Binding Patient.FullName}"
+                       FontSize="22"
+                       FontAttributes="Bold"
+                       TextColor="#1A365D" />
+                <Label Text="{Binding Patient.DocumentNumber, StringFormat='Cédula: {0}'}"
+                       FontSize="15"
+                       TextColor="#4A5568" />
+                <Label Text="{Binding Patient.PriorityLabel, StringFormat='Prioridad: {0}'}"
+                       FontSize="15"
+                       TextColor="#4A5568" />
+                <Frame BackgroundColor="#EBF8FF"
+                       BorderColor="#90CDF4"
+                       CornerRadius="8"
+                       Padding="12"
+                       HasShadow="False">
+                    <Label Text="Pantalla de detalle completa — TASK-006"
+                           FontSize="13"
+                           TextColor="#2B6CB0"
+                           HorizontalTextAlignment="Center" />
+                </Frame>
+            </StackLayout>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,8 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Application xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:Medical_atention.Converters"
              x:Class="Medical_atention.App">
     <Application.Resources>
-
+        <ResourceDictionary>
+            <converters:PriorityLevelToColorConverter x:Key="PriorityColorConverter" />
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

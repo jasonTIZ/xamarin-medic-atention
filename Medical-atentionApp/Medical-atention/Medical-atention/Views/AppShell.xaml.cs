@@ -12,6 +12,7 @@ namespace Medical_atention.Views
         public AppShell()
         {
             InitializeComponent();
+            Routing.RegisterRoute("patientdetail", typeof(PatientDetailPage));
             _ = LoadUserInfoAsync();
         }
 

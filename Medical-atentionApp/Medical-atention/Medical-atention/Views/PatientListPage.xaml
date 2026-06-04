@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Medical_atention.ViewModels"
+             x:Class="Medical_atention.Views.PatientListPage"
+             Title="Pacientes"
+             BackgroundColor="#F0F4F8">
+
+    <ContentPage.BindingContext>
+        <vm:PatientListViewModel />
+    </ContentPage.BindingContext>
+
+    <Grid RowDefinitions="Auto,*" Padding="0">
+
+        <!-- Banner offline (TASK-004) -->
+        <Frame Grid.Row="0"
+               IsVisible="{Binding IsOffline}"
+               BackgroundColor="#FFFAF0"
+               BorderColor="#F6AD55"
+               CornerRadius="0"
+               Padding="12,10"
+               HasShadow="False"
+               Margin="0">
+            <Label Text="Modo sin conexión — datos locales"
+                   TextColor="#C05621"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+        </Frame>
+
+        <Grid Grid.Row="1" Padding="16,8,16,16">
+
+            <!-- ActivityIndicator mientras carga -->
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                               IsVisible="{Binding IsLoading}"
+                               Color="#2C7BE5"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center" />
+
+            <RefreshView IsRefreshing="{Binding IsRefreshing}"
+                         Command="{Binding RefreshCommand}"
+                         IsVisible="{Binding IsNotLoading}">
+                <CollectionView ItemsSource="{Binding FilteredPatients}"
+                                SelectionMode="Single"
+                                SelectionChanged="OnPatientSelected"
+                                RemainingItemsThreshold="2">
+                    <CollectionView.Header>
+                        <StackLayout Padding="0,0,0,12" Spacing="8">
+                            <Label Text="Pacientes registrados"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="#1A365D" />
+                            <SearchBar Text="{Binding SearchText}"
+                                       Placeholder="Buscar por nombre o cédula"
+                                       BackgroundColor="White" />
+                        </StackLayout>
+                    </CollectionView.Header>
+
+                    <CollectionView.EmptyView>
+                        <StackLayout Padding="40,60" VerticalOptions="Center">
+                            <Label Text="No hay pacientes registrados"
+                                   FontSize="16"
+                                   TextColor="#718096"
+                                   HorizontalTextAlignment="Center" />
+                        </StackLayout>
+                    </CollectionView.EmptyView>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Margin="0,0,0,10"
+                                   Padding="14,12"
+                                   CornerRadius="10"
+                                   BackgroundColor="White"
+                                   BorderColor="#E2E8F0"
+                                   HasShadow="True">
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                    <Label Grid.Row="0" Grid.Column="0"
+                                           Text="{Binding FullName}"
+                                           FontSize="16"
+                                           FontAttributes="Bold"
+                                           TextColor="#1A365D" />
+                                    <Frame Grid.Row="0" Grid.Column="1"
+                                           Grid.RowSpan="2"
+                                           Padding="8,4"
+                                           CornerRadius="12"
+                                           HasShadow="False"
+                                           VerticalOptions="Center">
+                                        <Frame.BackgroundColor>
+                                            <Binding Path="PriorityLevel" Converter="{StaticResource PriorityColorConverter}" />
+                                        </Frame.BackgroundColor>
+                                        <Label Text="{Binding PriorityLabel}"
+                                               TextColor="White"
+                                               FontSize="11"
+                                               FontAttributes="Bold" />
+                                    </Frame>
+                                    <Label Grid.Row="1" Grid.Column="0"
+                                           Text="{Binding DocumentNumber, StringFormat='Cédula: {0}'}"
+                                           FontSize="13"
+                                           TextColor="#718096"
+                                           Margin="0,4,0,0" />
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+        </Grid>
+    </Grid>
+</ContentPage>

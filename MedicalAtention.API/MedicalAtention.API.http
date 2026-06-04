@@ -1,6 +1,19 @@
 @MedicalAtention.API_HostAddress = http://localhost:5258
+@token = {{login.response.body.token}}
 
-GET {{MedicalAtention.API_HostAddress}}/weatherforecast/
+# @name login
+POST {{MedicalAtention.API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@medic.com",
+  "password": "Admin123!"
+}
+
+###
+
+GET {{MedicalAtention.API_HostAddress}}/api/patients
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ###
