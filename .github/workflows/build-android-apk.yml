@@ -1,0 +1,96 @@
+# Compila el APK de Medical-atention.Android en Windows (Xamarin clásico).
+# No modifica la estructura del repo. Descarga el artifact e instala con adb.
+
+name: Build Android APK
+
+on:
+  push:
+    paths:
+      - 'Medical-atentionApp/**'
+      - '.github/workflows/build-android-apk.yml'
+  pull_request:
+    paths:
+      - 'Medical-atentionApp/**'
+      - '.github/workflows/build-android-apk.yml'
+  workflow_dispatch:
+
+env:
+  ANDROID_PROJECT: Medical-atentionApp/Medical-atention/Medical-atention.Android/Medical-atention.Android.csproj
+  SHARED_PROJECT: Medical-atentionApp/Medical-atention/Medical-atention/Medical-atention.csproj
+  PACKAGE_NAME: com.companyname.medical_atention
+
+jobs:
+  build-apk:
+    runs-on: windows-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK platform 33
+        shell: pwsh
+        run: |
+          $sdk = "C:\Program Files (x86)\Android\android-sdk"
+          echo "ANDROID_SDK_ROOT=$sdk" >> $env:GITHUB_ENV
+          $sdkmanager = Get-ChildItem -Path "$sdk\cmdline-tools" -Recurse -Filter "sdkmanager.bat" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $sdkmanager) {
+            throw "sdkmanager.bat not found under $sdk\cmdline-tools"
+          }
+          echo y | & $sdkmanager.FullName --sdk_root=$sdk "platforms;android-33" "build-tools;33.0.3" "platform-tools"
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      - name: Install Xamarin (Visual Studio workload)
+        shell: pwsh
+        run: |
+          $installer = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
+          $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+          if (-not $vsPath) { throw "Visual Studio no encontrado en el runner." }
+          Write-Host "VS path: $vsPath"
+          & $installer modify `
+            --installPath $vsPath `
+            --add Microsoft.VisualStudio.Workload.NetCrossPlat `
+            --includeRecommended `
+            --quiet --wait --norestart
+
+      # Solo Android + biblioteca compartida (evita iOS, que no está en el runner)
+      - name: Restore NuGet (Android only)
+        run: |
+          nuget restore "${{ env.SHARED_PROJECT }}"
+          nuget restore "${{ env.ANDROID_PROJECT }}"
+
+      - name: Build signed APK (Debug)
+        run: >
+          msbuild "${{ env.ANDROID_PROJECT }}"
+          /restore
+          /t:SignAndroidPackage
+          /p:Configuration=Debug
+          /p:Platform=AnyCPU
+          /p:EmbedAssembliesIntoApk=true
+          /p:AndroidPackageFormat=apk
+          /p:AndroidSdkDirectory="C:\Program Files (x86)\Android\android-sdk"
+
+      - name: List APK output
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse -Filter "*.apk" "Medical-atentionApp/Medical-atention/Medical-atention.Android/bin" | Format-Table FullName, Length
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: medical-atention-android-debug
+          path: |
+            Medical-atentionApp/Medical-atention/Medical-atention.Android/bin/Debug/*.apk
+            Medical-atentionApp/Medical-atention/Medical-atention.Android/bin/Debug/**/*.apk
+          if-no-files-found: error
