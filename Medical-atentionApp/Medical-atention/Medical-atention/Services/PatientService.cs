@@ -44,6 +44,28 @@ namespace Medical_atention.Services
             return JsonConvert.DeserializeObject<List<PatientResponseDto>>(await response.Content.ReadAsStringAsync());
         }
 
+        public async Task<(PatientResponseDto patient, string error)> UpdateAsync(int id, PatientRequestDto request, string token)
+        {
+            var message = BuildRequest(HttpMethod.Put, $"/api/patients/{id}", token);
+            message.Content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+
+            var response = await _client.SendAsync(message);
+
+            if (response.StatusCode == HttpStatusCode.Conflict)
+                return (null, "Ya existe un paciente con esta cédula");
+
+            if (!response.IsSuccessStatusCode)
+                return (null, "Error al guardar los cambios");
+
+            return (JsonConvert.DeserializeObject<PatientResponseDto>(await response.Content.ReadAsStringAsync()), null);
+        }
+
+        public async Task<bool> DeleteAsync(int id, string token)
+        {
+            var response = await _client.SendAsync(BuildRequest(HttpMethod.Delete, $"/api/patients/{id}", token));
+            return response.IsSuccessStatusCode;
+        }
+
         private static HttpRequestMessage BuildRequest(HttpMethod method, string path, string token)
         {
             var request = new HttpRequestMessage(method, AppConstants.ApiBaseUrl + path);

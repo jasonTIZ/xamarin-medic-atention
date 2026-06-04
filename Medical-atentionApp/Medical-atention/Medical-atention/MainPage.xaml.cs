@@ -1,35 +1,101 @@
+using Medical_atention.Constants;
 using Medical_atention.Models;
+using Medical_atention.Services;
 using Medical_atention.ViewModels;
 using Medical_atention.Views;
-using System.Linq;
+using System;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Medical_atention
 {
     public partial class MainPage : ContentPage
     {
+        private readonly PatientsViewModel _viewModel;
+        private readonly IPatientService _patientService = new PatientService();
+        private PatientResponseDto _menuPatient;
+
         public MainPage()
         {
             InitializeComponent();
-            BindingContext = new PatientsViewModel();
+            BindingContext = _viewModel = new PatientsViewModel();
         }
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-            await ((PatientsViewModel)BindingContext).LoadPatientsAsync();
+            await _viewModel.LoadPatientsAsync();
         }
 
-        private async void OnPatientSelected(object sender, SelectionChangedEventArgs e)
+        private void OnMenuClicked(object sender, EventArgs e)
         {
-            if (e.CurrentSelection.FirstOrDefault() is PatientResponseDto patient)
+            if (((Button)sender).CommandParameter is PatientResponseDto patient)
             {
-                ((CollectionView)sender).SelectedItem = null;
-                await Shell.Current.GoToAsync($"{nameof(PatientDetailPage)}?id={patient.Id}");
+                _menuPatient = patient;
+                MenuOverlay.IsVisible = true;
+                MenuPopup.IsVisible = true;
             }
         }
 
-        private async void OnAddPatientTapped(object sender, System.EventArgs e)
+        private void OnMenuDismissed(object sender, EventArgs e) => CloseMenu();
+
+        private void CloseMenu()
+        {
+            MenuOverlay.IsVisible = false;
+            MenuPopup.IsVisible = false;
+            _menuPatient = null;
+        }
+
+        private async void OnMenuDetail(object sender, EventArgs e)
+        {
+            var patient = _menuPatient;
+            CloseMenu();
+            if (patient != null)
+                await Shell.Current.GoToAsync($"{nameof(PatientDetailPage)}?id={patient.Id}");
+        }
+
+        private async void OnMenuHistorial(object sender, EventArgs e)
+        {
+            CloseMenu();
+            await DisplayAlert("Historial", "Función no disponible aún.", "OK");
+        }
+
+        private async void OnMenuNewConsultation(object sender, EventArgs e)
+        {
+            CloseMenu();
+            await DisplayAlert("Nueva consulta", "Función no disponible aún.", "OK");
+        }
+
+        private async void OnMenuDelete(object sender, EventArgs e)
+        {
+            var patient = _menuPatient;
+            CloseMenu();
+            if (patient is null) return;
+
+            bool confirm = await DisplayAlert(
+                "Eliminar paciente",
+                $"¿Eliminar a {patient.FullName}?",
+                "Eliminar", "Cancelar");
+
+            if (!confirm) return;
+
+            try
+            {
+                var token = await SecureStorage.GetAsync(AppConstants.TokenKey);
+                if (!await _patientService.DeleteAsync(patient.Id, token))
+                {
+                    await DisplayAlert("Error", "No se pudo eliminar el paciente.", "OK");
+                    return;
+                }
+                await _viewModel.LoadPatientsAsync();
+            }
+            catch (Exception)
+            {
+                await DisplayAlert("Error", "Sin conexión, verifica tu red.", "OK");
+            }
+        }
+
+        private async void OnAddPatientTapped(object sender, EventArgs e)
         {
             await Shell.Current.GoToAsync(nameof(RegisterPatientPage));
         }
