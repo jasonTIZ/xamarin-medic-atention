@@ -18,5 +18,6 @@ namespace Medical_atention.Services
         Task<RegisterConsultationResult> RegisterAsync(ConsultationRequestDto request, string token);
         Task<List<ConsultationListItem>> GetByPatientAsync(int patientId, DateTime from, DateTime to, string token);
         Task<ConsultationResponseDto> GetDetailAsync(int? serverId, int localId, string token);
+        Task<(bool success, string error)> UpdateAsync(int? serverId, int localId, ConsultationUpdateDto request, string token);
     }
 }

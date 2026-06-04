@@ -18,49 +18,61 @@
                        TextColor="#1A365D" />
             </Frame>
 
-            <Grid ColumnDefinitions="Auto,*,Auto,*,Auto"
-                  ColumnSpacing="8"
-                  Padding="16,12,16,8">
-                <Label Grid.Column="0"
-                       Text="Desde:"
-                       FontSize="13"
-                       TextColor="#4A5568"
-                       VerticalOptions="Center" />
-                <Frame Grid.Column="1"
-                       BorderColor="#CBD5E0"
-                       CornerRadius="8"
-                       Padding="8,2"
-                       HasShadow="False"
-                       BackgroundColor="White">
-                    <DatePicker Date="{Binding FilterFrom}"
-                                Format="dd/MM/yyyy"
-                                TextColor="#1A365D" />
-                </Frame>
-                <Label Grid.Column="2"
-                       Text="Hasta:"
-                       FontSize="13"
-                       TextColor="#4A5568"
-                       VerticalOptions="Center" />
-                <Frame Grid.Column="3"
-                       BorderColor="#CBD5E0"
-                       CornerRadius="8"
-                       Padding="8,2"
-                       HasShadow="False"
-                       BackgroundColor="White">
-                    <DatePicker Date="{Binding FilterTo}"
-                                Format="dd/MM/yyyy"
-                                TextColor="#1A365D" />
-                </Frame>
-                <Button Grid.Column="4"
-                        Text="Filtrar"
-                        Command="{Binding FilterCommand}"
-                        BackgroundColor="Transparent"
-                        TextColor="#2C7BE5"
-                        FontSize="14"
-                        FontAttributes="Bold"
-                        Padding="8,0"
-                        VerticalOptions="Center" />
-            </Grid>
+            <StackLayout Padding="16,12,16,8" Spacing="10">
+
+                <Grid ColumnDefinitions="72,*" ColumnSpacing="10">
+                    <Label Text="Desde:"
+                           FontSize="14"
+                           TextColor="#4A5568"
+                           VerticalOptions="Center" />
+                    <Frame Grid.Column="1"
+                           BorderColor="#CBD5E0"
+                           CornerRadius="8"
+                           Padding="12,8"
+                           HasShadow="False"
+                           BackgroundColor="White"
+                           HeightRequest="48">
+                        <DatePicker Date="{Binding FilterFrom}"
+                                    Format="dd/MM/yyyy"
+                                    FontSize="15"
+                                    TextColor="#1A365D"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="FillAndExpand" />
+                    </Frame>
+                </Grid>
+
+                <Grid ColumnDefinitions="72,*,Auto" ColumnSpacing="10">
+                    <Label Text="Hasta:"
+                           FontSize="14"
+                           TextColor="#4A5568"
+                           VerticalOptions="Center" />
+                    <Frame Grid.Column="1"
+                           BorderColor="#CBD5E0"
+                           CornerRadius="8"
+                           Padding="12,8"
+                           HasShadow="False"
+                           BackgroundColor="White"
+                           HeightRequest="48">
+                        <DatePicker Date="{Binding FilterTo}"
+                                    Format="dd/MM/yyyy"
+                                    FontSize="15"
+                                    TextColor="#1A365D"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="FillAndExpand" />
+                    </Frame>
+                    <Button Grid.Column="2"
+                            Text="Filtrar"
+                            Command="{Binding FilterCommand}"
+                            BackgroundColor="Transparent"
+                            TextColor="#2C7BE5"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            Padding="12,0"
+                            VerticalOptions="Center"
+                            HeightRequest="48" />
+                </Grid>
+
+            </StackLayout>
 
             <ActivityIndicator IsRunning="{Binding IsLoading}"
                                IsVisible="{Binding IsLoading}"

@@ -68,6 +68,26 @@ namespace Medical_atention.Data
             return await db.Table<LocalConsultation>().FirstOrDefaultAsync(c => c.ServerId == serverId);
         }
 
+        public async Task<bool> UpdateConsultationTreatmentNotesAsync(
+            int localId, int? serverId, string treatment, string notes, bool pendingSync)
+        {
+            var db = await GetConnectionAsync();
+            LocalConsultation consultation = null;
+
+            if (localId > 0)
+                consultation = await db.Table<LocalConsultation>().FirstOrDefaultAsync(c => c.LocalId == localId);
+            else if (serverId.HasValue && serverId.Value > 0)
+                consultation = await db.Table<LocalConsultation>().FirstOrDefaultAsync(c => c.ServerId == serverId);
+
+            if (consultation is null) return false;
+
+            consultation.Treatment = treatment;
+            consultation.Notes = notes;
+            consultation.PendingSync = pendingSync;
+            await db.UpdateAsync(consultation);
+            return true;
+        }
+
         public async Task<System.Collections.Generic.Dictionary<int, (string Priority, DateTime ConsultationDate)>> GetLatestPrioritiesByPatientAsync()
         {
             var db = await GetConnectionAsync();

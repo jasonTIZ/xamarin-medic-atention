@@ -129,6 +129,44 @@ namespace Medical_atention.Services
                 .ToList();
         }
 
+        public async Task<(bool success, string error)> UpdateAsync(
+            int? serverId, int localId, ConsultationUpdateDto request, string token)
+        {
+            var treatment = request.Treatment?.Trim() ?? string.Empty;
+            var notes = request.Notes?.Trim() ?? string.Empty;
+            var synced = false;
+
+            if (serverId.HasValue && serverId.Value > 0 && Connectivity.NetworkAccess == NetworkAccess.Internet)
+            {
+                try
+                {
+                    var message = BuildRequest(HttpMethod.Put, $"/api/consultations/{serverId.Value}", token);
+                    message.Content = new StringContent(
+                        JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+
+                    var response = await _client.SendAsync(message);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        synced = true;
+                        var updated = JsonConvert.DeserializeObject<ConsultationResponseDto>(
+                            await response.Content.ReadAsStringAsync());
+                        await _localDb.UpdateConsultationTreatmentNotesAsync(
+                            localId, serverId, updated.Treatment, updated.Notes, pendingSync: false);
+                        return (true, null);
+                    }
+
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                        return (false, "Consulta no encontrada");
+                }
+                catch (Exception) { }
+            }
+
+            var saved = await _localDb.UpdateConsultationTreatmentNotesAsync(
+                localId, serverId, treatment, notes, pendingSync: !synced);
+
+            return saved ? (true, null) : (false, "No se pudo guardar los cambios");
+        }
+
         public async Task<ConsultationResponseDto> GetDetailAsync(int? serverId, int localId, string token)
         {
             if (serverId.HasValue && Connectivity.NetworkAccess == NetworkAccess.Internet)

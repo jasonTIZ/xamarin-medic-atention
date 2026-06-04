@@ -13,6 +13,12 @@ namespace Medical_atention.Models
         public string Priority { get; set; }
     }
 
+    public class ConsultationUpdateDto
+    {
+        public string Treatment { get; set; }
+        public string Notes { get; set; }
+    }
+
     public class ConsultationResponseDto
     {
         public int Id { get; set; }
