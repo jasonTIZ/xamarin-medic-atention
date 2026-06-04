@@ -9,8 +9,23 @@ namespace Medical_atention.Helpers
         {
             try
             {
+                var exp = GetClaim(token, "exp");
+                if (exp == null) return false;
+                var expirationTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(exp));
+                return expirationTime > DateTimeOffset.UtcNow;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static string GetClaim(string token, string claimKey)
+        {
+            try
+            {
                 var parts = token.Split('.');
-                if (parts.Length != 3) return false;
+                if (parts.Length != 3) return null;
 
                 var payload = parts[1]
                     .Replace('-', '+')
@@ -25,14 +40,11 @@ namespace Medical_atention.Helpers
                 var json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(payload));
                 var claims = JObject.Parse(json);
 
-                if (!claims.TryGetValue("exp", out var expToken)) return false;
-
-                var expirationTime = DateTimeOffset.FromUnixTimeSeconds(expToken.Value<long>());
-                return expirationTime > DateTimeOffset.UtcNow;
+                return claims.TryGetValue(claimKey, out var value) ? value.ToString() : null;
             }
             catch
             {
-                return false;
+                return null;
             }
         }
     }

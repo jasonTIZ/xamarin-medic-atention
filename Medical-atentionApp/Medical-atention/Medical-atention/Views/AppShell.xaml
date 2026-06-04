@@ -24,6 +24,10 @@
                   ContentTemplate="{DataTemplate views:PatientListPage}"
                   Route="patients" />
 
+    <ShellContent Title="Perfil"
+                  ContentTemplate="{DataTemplate views:ProfilePage}"
+                  Route="profile" />
+
     <MenuItem Text="Cerrar sesión"
               Clicked="OnLogoutClicked" />
 
