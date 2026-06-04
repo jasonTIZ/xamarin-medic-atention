@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Medical_atention.Views.PatientDetailPage"
+             BackgroundColor="#F0F4F8"
+             Title="Detalle del paciente">
+
+    <ScrollView>
+        <StackLayout Padding="32,32,32,32" Spacing="0">
+
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                               IsVisible="{Binding IsLoading}"
+                               Color="#2C7BE5"
+                               Margin="0,40,0,0" />
+
+            <StackLayout IsVisible="{Binding IsNotLoading}">
+
+                <Label Text="Nombre"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="16,12" HasShadow="False"
+                       BackgroundColor="White"
+                       Margin="0,0,0,16">
+                    <Label Text="{Binding Patient.Name}"
+                           TextColor="#1A365D"
+                           FontSize="15" />
+                </Frame>
+
+                <Label Text="Apellido"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="16,12" HasShadow="False"
+                       BackgroundColor="White"
+                       Margin="0,0,0,16">
+                    <Label Text="{Binding Patient.LastName}"
+                           TextColor="#1A365D"
+                           FontSize="15" />
+                </Frame>
+
+                <Label Text="Cédula"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="16,12" HasShadow="False"
+                       BackgroundColor="White"
+                       Margin="0,0,0,16">
+                    <Label Text="{Binding Patient.IdentificationNumber}"
+                           TextColor="#1A365D"
+                           FontSize="15" />
+                </Frame>
+
+                <Label Text="Fecha de nacimiento"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="16,12" HasShadow="False"
+                       BackgroundColor="White"
+                       Margin="0,0,0,16">
+                    <Label Text="{Binding Patient.DateOfBirth, StringFormat='{0:dd/MM/yyyy}'}"
+                           TextColor="#1A365D"
+                           FontSize="15" />
+                </Frame>
+
+                <Label Text="Género"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="16,12" HasShadow="False"
+                       BackgroundColor="White"
+                       Margin="0,0,0,16">
+                    <Label Text="{Binding Patient.Gender}"
+                           TextColor="#1A365D"
+                           FontSize="15" />
+                </Frame>
+
+                <Label Text="Registrado el"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="16,12" HasShadow="False"
+                       BackgroundColor="White">
+                    <Label Text="{Binding Patient.CreatedAt, StringFormat='{0:dd/MM/yyyy HH:mm}'}"
+                           TextColor="#1A365D"
+                           FontSize="15" />
+                </Frame>
+
+            </StackLayout>
+
+        </StackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -20,7 +20,7 @@
         </StackLayout>
     </Shell.FlyoutHeader>
 
-    <ShellContent Title="Inicio"
+    <ShellContent Title="Pacientes"
                   ContentTemplate="{DataTemplate local:MainPage}" />
 
     <MenuItem Text="Cerrar sesión"

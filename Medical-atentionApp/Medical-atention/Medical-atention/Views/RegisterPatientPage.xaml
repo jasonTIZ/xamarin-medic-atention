@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Medical_atention.Views.RegisterPatientPage"
+             BackgroundColor="#F0F4F8"
+             Title="Nuevo paciente">
+
+    <Grid>
+        <ScrollView>
+            <StackLayout Padding="32,32,32,48" Spacing="0">
+
+                <!-- Nombre -->
+                <Label Text="Nombre completo"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="12,0" HasShadow="False"
+                       BackgroundColor="White">
+                    <Entry Text="{Binding Name}"
+                           Placeholder="Nombre del paciente"
+                           ReturnType="Next"
+                           TextColor="#1A365D"
+                           PlaceholderColor="#A0AEC0"
+                           BackgroundColor="Transparent" />
+                </Frame>
+                <Label Text="{Binding NameError}"
+                       TextColor="#E53E3E" FontSize="12"
+                       IsVisible="{Binding HasNameError}"
+                       Margin="4,4,0,0" />
+
+                <!-- Apellido -->
+                <Label Text="Apellido"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,16,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="12,0" HasShadow="False"
+                       BackgroundColor="White">
+                    <Entry Text="{Binding LastName}"
+                           Placeholder="Apellido del paciente"
+                           ReturnType="Next"
+                           TextColor="#1A365D"
+                           PlaceholderColor="#A0AEC0"
+                           BackgroundColor="Transparent" />
+                </Frame>
+                <Label Text="{Binding LastNameError}"
+                       TextColor="#E53E3E" FontSize="12"
+                       IsVisible="{Binding HasLastNameError}"
+                       Margin="4,4,0,0" />
+
+                <!-- Cédula -->
+                <Label Text="Cédula"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,16,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="12,0" HasShadow="False"
+                       BackgroundColor="White">
+                    <Entry Text="{Binding IdentificationNumber}"
+                           Placeholder="123456789"
+                           Keyboard="Numeric"
+                           ReturnType="Next"
+                           TextColor="#1A365D"
+                           PlaceholderColor="#A0AEC0"
+                           BackgroundColor="Transparent" />
+                </Frame>
+                <Label Text="{Binding IdentificationNumberError}"
+                       TextColor="#E53E3E" FontSize="12"
+                       IsVisible="{Binding HasIdentificationNumberError}"
+                       Margin="4,4,0,0" />
+
+                <!-- Fecha de nacimiento -->
+                <Label Text="Fecha de nacimiento"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,16,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="12,4" HasShadow="False"
+                       BackgroundColor="White">
+                    <DatePicker Date="{Binding DateOfBirth}"
+                                MaximumDate="{Binding MaxDateOfBirth}"
+                                TextColor="#1A365D"
+                                BackgroundColor="Transparent"
+                                Format="dd/MM/yyyy" />
+                </Frame>
+                <Label Text="{Binding DateError}"
+                       TextColor="#E53E3E" FontSize="12"
+                       IsVisible="{Binding HasDateError}"
+                       Margin="4,4,0,0" />
+
+                <!-- Género -->
+                <Label Text="Género"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,16,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="12,0" HasShadow="False"
+                       BackgroundColor="White">
+                    <Picker Title="Seleccionar género"
+                            ItemsSource="{Binding Genders}"
+                            SelectedItem="{Binding SelectedGender}"
+                            TextColor="#1A365D"
+                            TitleColor="#A0AEC0"
+                            BackgroundColor="Transparent" />
+                </Frame>
+                <Label Text="{Binding GenderError}"
+                       TextColor="#E53E3E" FontSize="12"
+                       IsVisible="{Binding HasGenderError}"
+                       Margin="4,4,0,0" />
+
+                <!-- Error general -->
+                <Frame IsVisible="{Binding HasGeneralError}"
+                       BackgroundColor="#FFF5F5"
+                       BorderColor="#FEB2B2"
+                       CornerRadius="8"
+                       Padding="12,10"
+                       Margin="0,16,0,0"
+                       HasShadow="False">
+                    <Label Text="{Binding GeneralError}"
+                           TextColor="#C53030"
+                           FontSize="14"
+                           HorizontalOptions="Center" />
+                </Frame>
+
+                <!-- Botón registrar -->
+                <Button Text="Registrar paciente"
+                        Command="{Binding RegisterCommand}"
+                        BackgroundColor="#2C7BE5"
+                        TextColor="White"
+                        CornerRadius="8"
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HeightRequest="50"
+                        Margin="0,24,0,0" />
+
+                <!-- Indicador de carga -->
+                <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                   IsVisible="{Binding IsLoading}"
+                                   Color="#2C7BE5"
+                                   Margin="0,16,0,0" />
+
+            </StackLayout>
+        </ScrollView>
+
+        <!-- Snackbar -->
+        <Frame IsVisible="{Binding IsSnackbarVisible}"
+               BackgroundColor="#323232"
+               CornerRadius="8"
+               Padding="16,12"
+               Margin="20,0,20,32"
+               HasShadow="True"
+               VerticalOptions="End"
+               HorizontalOptions="Fill">
+            <Label Text="{Binding SnackbarMessage}"
+                   TextColor="White"
+                   FontSize="14"
+                   HorizontalOptions="Center" />
+        </Frame>
+    </Grid>
+
+</ContentPage>
