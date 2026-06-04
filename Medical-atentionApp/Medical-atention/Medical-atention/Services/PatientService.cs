@@ -53,21 +53,23 @@ namespace Medical_atention.Services
 
         private static async Task<List<Patient>> FetchFromApiAsync()
         {
-            using var client = await ApiClient.CreateAsync();
-            var response = await client.GetAsync("api/patients");
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            var dtos = JsonConvert.DeserializeObject<List<PatientApiDto>>(json) ?? new List<PatientApiDto>();
-
-            return dtos.Select(d => new Patient
+            using (var client = await ApiClient.CreateAsync())
             {
-                Id = d.Id,
-                FirstName = d.FirstName,
-                LastName = d.LastName,
-                DocumentNumber = d.DocumentNumber ?? string.Empty,
-                PriorityLevel = d.PriorityLevel
-            }).ToList();
+                var response = await client.GetAsync("api/patients");
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+                var dtos = JsonConvert.DeserializeObject<List<PatientApiDto>>(json) ?? new List<PatientApiDto>();
+
+                return dtos.Select(d => new Patient
+                {
+                    Id = d.Id,
+                    FirstName = d.FirstName,
+                    LastName = d.LastName,
+                    DocumentNumber = d.DocumentNumber ?? string.Empty,
+                    PriorityLevel = d.PriorityLevel
+                }).ToList();
+            }
         }
 
         private class PatientApiDto

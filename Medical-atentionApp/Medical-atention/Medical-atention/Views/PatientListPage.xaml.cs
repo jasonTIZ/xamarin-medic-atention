@@ -23,7 +23,8 @@ namespace Medical_atention.Views
 
         private async void OnPatientSelected(object sender, SelectionChangedEventArgs e)
         {
-            if (e.CurrentSelection.FirstOrDefault() is not Patient patient)
+            var patient = e.CurrentSelection.FirstOrDefault() as Patient;
+            if (patient == null)
                 return;
 
             if (sender is CollectionView list)

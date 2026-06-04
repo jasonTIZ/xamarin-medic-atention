@@ -9,12 +9,15 @@ namespace Medical_atention.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var level = value is int i ? i : 0;
-            return level switch
+            switch (level)
             {
-                2 => Color.FromHex("#E53E3E"),
-                1 => Color.FromHex("#DD6B20"),
-                _ => Color.FromHex("#38A169")
-            };
+                case 2:
+                    return Color.FromHex("#E53E3E");
+                case 1:
+                    return Color.FromHex("#DD6B20");
+                default:
+                    return Color.FromHex("#38A169");
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

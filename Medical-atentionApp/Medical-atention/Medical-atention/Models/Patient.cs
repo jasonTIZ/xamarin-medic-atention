@@ -15,11 +15,20 @@ namespace Medical_atention.Models
         public string FullName => $"{FirstName} {LastName}".Trim();
 
         [Ignore]
-        public string PriorityLabel => PriorityLevel switch
+        public string PriorityLabel
         {
-            2 => "Alta",
-            1 => "Media",
-            _ => "Baja"
-        };
+            get
+            {
+                switch (PriorityLevel)
+                {
+                    case 2:
+                        return "Alta";
+                    case 1:
+                        return "Media";
+                    default:
+                        return "Baja";
+                }
+            }
+        }
     }
 }
