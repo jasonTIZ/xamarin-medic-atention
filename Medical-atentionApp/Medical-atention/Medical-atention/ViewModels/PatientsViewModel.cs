@@ -1,4 +1,5 @@
 using Medical_atention.Constants;
+using Medical_atention.Data;
 using Medical_atention.Models;
 using Medical_atention.Services;
 using System;
@@ -48,12 +49,12 @@ namespace Medical_atention.ViewModels
             IsLoading = true;
             try
             {
-                var patients = await _patientService.GetAllPatientsAsync(await SecureStorage.GetAsync(AppConstants.TokenKey));
+                var patients = await _patientService.GetAllPatientsAsync(
+                    await SecureStorage.GetAsync(AppConstants.TokenKey));
+
+                var localPriorities = await LocalDatabase.Instance.GetLatestPrioritiesByPatientAsync();
                 foreach (var patient in patients)
-                {
-                    if (string.IsNullOrWhiteSpace(patient.Priority))
-                        patient.Priority = ResolveDefaultPriority(patient.Id);
-                }
+                    ApplyLatestPriority(patient, localPriorities);
 
                 Patients = new ObservableCollection<PatientResponseDto>(patients);
                 IsEmpty = !Patients.Any();
@@ -62,15 +63,21 @@ namespace Medical_atention.ViewModels
             finally { IsLoading = false; }
         }
 
-        private static string ResolveDefaultPriority(int id)
+        private static void ApplyLatestPriority(
+            PatientResponseDto patient,
+            System.Collections.Generic.Dictionary<int, (string Priority, DateTime ConsultationDate)> localPriorities)
         {
-            switch (id % 4)
+            if (localPriorities.TryGetValue(patient.Id, out var local))
             {
-                case 0: return "urgent";
-                case 1: return "high";
-                case 2: return "medium";
-                default: return "low";
+                if (patient.LastConsultationDate == null || local.ConsultationDate > patient.LastConsultationDate)
+                {
+                    patient.Priority = local.Priority;
+                    patient.LastConsultationDate = local.ConsultationDate;
+                }
             }
+
+            if (string.IsNullOrWhiteSpace(patient.Priority))
+                patient.Priority = null;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

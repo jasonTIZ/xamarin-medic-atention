@@ -1,4 +1,6 @@
 using Medical_atention.Models;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Medical_atention.Services
@@ -14,5 +16,7 @@ namespace Medical_atention.Services
     public interface IConsultationService
     {
         Task<RegisterConsultationResult> RegisterAsync(ConsultationRequestDto request, string token);
+        Task<List<ConsultationListItem>> GetByPatientAsync(int patientId, DateTime from, DateTime to, string token);
+        Task<ConsultationResponseDto> GetDetailAsync(int? serverId, int localId, string token);
     }
 }

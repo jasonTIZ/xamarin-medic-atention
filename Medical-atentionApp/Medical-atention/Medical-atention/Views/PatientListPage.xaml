@@ -6,11 +6,12 @@
              BackgroundColor="#F0F4F8"
              Title="Pacientes">
 
-    <AbsoluteLayout x:Name="RootLayout">
+    <Grid>
+        <AbsoluteLayout x:Name="RootLayout">
 
         <StackLayout AbsoluteLayout.LayoutBounds="0,0,1,1"
                      AbsoluteLayout.LayoutFlags="All"
-                     Padding="16,16,16,80" Spacing="0">
+                     Padding="16,16,16,88" Spacing="0">
 
             <ActivityIndicator IsRunning="{Binding IsLoading}"
                                IsVisible="{Binding IsLoading}"
@@ -69,6 +70,7 @@
                                            TextColor="#718096" />
                                     <controls:PriorityBadgeView Priority="{Binding Priority}"
                                                                 Size="Small"
+                                                                IsVisible="{Binding HasPriority}"
                                                                 HorizontalOptions="Start" />
                                 </StackLayout>
 
@@ -92,23 +94,6 @@
             </CollectionView>
 
         </StackLayout>
-
-        <Frame BackgroundColor="#2C7BE5"
-               CornerRadius="28"
-               HeightRequest="56" WidthRequest="56"
-               HasShadow="True"
-               AbsoluteLayout.LayoutBounds="1,1,56,56"
-               AbsoluteLayout.LayoutFlags="PositionProportional"
-               Margin="0,0,24,24">
-            <Frame.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnAddPatientTapped" />
-            </Frame.GestureRecognizers>
-            <Label Text="+"
-                   FontSize="30" FontAttributes="Bold"
-                   TextColor="White"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Center" />
-        </Frame>
 
         <BoxView x:Name="MenuOverlay"
                  Color="#80000000"
@@ -165,6 +150,30 @@
             </StackLayout>
         </Frame>
 
-    </AbsoluteLayout>
+        </AbsoluteLayout>
+
+        <Frame BackgroundColor="#2C7BE5"
+               CornerRadius="28"
+               HasShadow="True"
+               HeightRequest="56"
+               WidthRequest="56"
+               Padding="0"
+               VerticalOptions="End"
+               HorizontalOptions="End"
+               Margin="0,0,24,24">
+            <Frame.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnAddPatientTapped" />
+            </Frame.GestureRecognizers>
+            <Label Text="+"
+                   FontSize="32"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Center" />
+        </Frame>
+
+    </Grid>
 
 </ContentPage>

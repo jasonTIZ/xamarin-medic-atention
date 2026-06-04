@@ -7,38 +7,78 @@
              Title="Detalle de consulta">
 
     <ScrollView>
-        <StackLayout Padding="32,24,32,32" Spacing="0">
+        <StackLayout Padding="24,20,24,32" Spacing="0">
 
-            <Frame BorderColor="#E2E8F0" CornerRadius="12"
-                   Padding="20,16" HasShadow="False"
-                   BackgroundColor="White"
-                   Margin="0,0,0,20">
-                <StackLayout Spacing="12">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="{Binding PatientName}"
-                               FontSize="18" FontAttributes="Bold"
-                               TextColor="#1A202C"
-                               VerticalOptions="Center" />
-                        <controls:PriorityBadgeView Grid.Column="1"
-                                                    Priority="{Binding Priority}"
-                                                    Size="Large"
-                                                    VerticalOptions="Center" />
-                    </Grid>
-                    <Label Text="{Binding Status, StringFormat='Estado: {0}'}"
-                           FontSize="13" TextColor="#718096" />
-                </StackLayout>
-            </Frame>
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                               IsVisible="{Binding IsLoading}"
+                               Color="#2C7BE5"
+                               Margin="0,40,0,0" />
 
-            <Label Text="Motivo de consulta"
-                   FontSize="13" FontAttributes="Bold"
-                   TextColor="#4A5568"
-                   Margin="0,0,0,4" />
-            <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                   Padding="16,12" HasShadow="False"
-                   BackgroundColor="White">
-                <Label Text="{Binding ChiefComplaint}"
-                       FontSize="15" TextColor="#1A365D" />
-            </Frame>
+            <StackLayout IsVisible="{Binding IsNotLoading}" Spacing="0">
+
+                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,20">
+                    <Label Text="{Binding DateDisplay}"
+                           FontSize="14"
+                           TextColor="#718096"
+                           VerticalOptions="Center" />
+                    <controls:PriorityBadgeView Grid.Column="1"
+                                                Priority="{Binding Priority}"
+                                                Size="Medium"
+                                                VerticalOptions="Center" />
+                </Grid>
+
+                <Label Text="Diagnóstico"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="16,12" HasShadow="False"
+                       BackgroundColor="White"
+                       Margin="0,0,0,16">
+                    <Label Text="{Binding Diagnosis}"
+                           FontSize="15" FontAttributes="Bold"
+                           TextColor="#1A202C" />
+                </Frame>
+
+                <Label Text="Síntomas"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="16,12" HasShadow="False"
+                       BackgroundColor="White"
+                       Margin="0,0,0,16">
+                    <Label Text="{Binding Symptoms}"
+                           FontSize="15"
+                           TextColor="#1A365D" />
+                </Frame>
+
+                <Label Text="Tratamiento"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="16,12" HasShadow="False"
+                       BackgroundColor="White"
+                       Margin="0,0,0,16">
+                    <Label Text="{Binding Treatment}"
+                           FontSize="15"
+                           TextColor="#1A365D" />
+                </Frame>
+
+                <Label Text="Notas"
+                       FontSize="13" FontAttributes="Bold"
+                       TextColor="#4A5568"
+                       Margin="0,0,0,4" />
+                <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                       Padding="16,12" HasShadow="False"
+                       BackgroundColor="White">
+                    <Label Text="{Binding Notes}"
+                           FontSize="15"
+                           TextColor="#1A365D" />
+                </Frame>
+
+            </StackLayout>
 
         </StackLayout>
     </ScrollView>

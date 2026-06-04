@@ -2,6 +2,7 @@ using SQLite;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Medical_atention.Data
@@ -44,6 +45,42 @@ namespace Medical_atention.Data
         {
             var db = await GetConnectionAsync();
             return await db.Table<LocalConsultation>().Where(c => c.PendingSync).ToListAsync();
+        }
+
+        public async Task<List<LocalConsultation>> GetConsultationsByPatientAsync(int patientId)
+        {
+            var db = await GetConnectionAsync();
+            return await db.Table<LocalConsultation>()
+                .Where(c => c.PatientId == patientId)
+                .OrderByDescending(c => c.ConsultationDate)
+                .ToListAsync();
+        }
+
+        public async Task<LocalConsultation> GetConsultationByLocalIdAsync(int localId)
+        {
+            var db = await GetConnectionAsync();
+            return await db.Table<LocalConsultation>().FirstOrDefaultAsync(c => c.LocalId == localId);
+        }
+
+        public async Task<LocalConsultation> GetConsultationByServerIdAsync(int serverId)
+        {
+            var db = await GetConnectionAsync();
+            return await db.Table<LocalConsultation>().FirstOrDefaultAsync(c => c.ServerId == serverId);
+        }
+
+        public async Task<System.Collections.Generic.Dictionary<int, (string Priority, DateTime ConsultationDate)>> GetLatestPrioritiesByPatientAsync()
+        {
+            var db = await GetConnectionAsync();
+            var all = await db.Table<LocalConsultation>().ToListAsync();
+            return all
+                .GroupBy(c => c.PatientId)
+                .ToDictionary(
+                    g => g.Key,
+                    g =>
+                    {
+                        var latest = g.OrderByDescending(c => c.ConsultationDate).First();
+                        return (latest.Priority, latest.ConsultationDate);
+                    });
         }
     }
 }

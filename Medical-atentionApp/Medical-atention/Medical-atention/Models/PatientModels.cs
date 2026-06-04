@@ -21,7 +21,10 @@ namespace Medical_atention.Models
         public DateTime DateOfBirth { get; set; }
         public string Gender { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string Priority { get; set; } = "medium";
+        public string Priority { get; set; }
+        public DateTime? LastConsultationDate { get; set; }
+
+        public bool HasPriority => !string.IsNullOrWhiteSpace(Priority);
 
         public string FullName => $"{Name} {LastName}".Trim();
 
