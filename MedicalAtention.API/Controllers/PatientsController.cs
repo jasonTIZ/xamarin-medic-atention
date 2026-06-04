@@ -39,25 +39,58 @@ public class PatientsController(AppDbContext db) : ControllerBase
             IdentificationNumber = request.IdentificationNumber.Trim(),
             DateOfBirth = request.DateOfBirth,
             Gender = request.Gender,
+            Priority = PriorityLevel.Medium,
             CreatedAt = DateTime.UtcNow
         };
 
         db.Patients.Add(patient);
         db.SaveChanges();
 
-        return CreatedAtAction(nameof(GetById), new { id = patient.Id },
-            new PatientResponseDto(patient.Id, patient.Name, patient.LastName, patient.IdentificationNumber, patient.DateOfBirth, patient.Gender, patient.CreatedAt));
+        return CreatedAtAction(nameof(GetById), new { id = patient.Id }, ToDto(patient));
     }
 
     [HttpGet]
-    public IActionResult GetAll()
-        => Ok(db.Patients.Select(p => new PatientResponseDto(p.Id, p.Name, p.LastName, p.IdentificationNumber, p.DateOfBirth, p.Gender, p.CreatedAt)));
+    public IActionResult GetAll([FromQuery] string? sort)
+    {
+        var query = db.Patients.AsQueryable();
+
+        if (string.Equals(sort, "priority", StringComparison.OrdinalIgnoreCase))
+        {
+            query = query
+                .OrderBy(p => p.Priority)
+                .ThenBy(p => p.LastName)
+                .ThenBy(p => p.Name);
+        }
+        else
+        {
+            query = query.OrderBy(p => p.LastName).ThenBy(p => p.Name);
+        }
+
+        return Ok(query.Select(p => ToDto(p)).ToList());
+    }
 
     [HttpGet("{id}")]
     public IActionResult GetById(int id)
     {
         var patient = db.Patients.Find(id);
         if (patient is null) return NotFound();
-        return Ok(new PatientResponseDto(patient.Id, patient.Name, patient.LastName, patient.IdentificationNumber, patient.DateOfBirth, patient.Gender, patient.CreatedAt));
+        return Ok(ToDto(patient));
     }
+
+    [HttpPatch("{id}/priority")]
+    public IActionResult UpdatePriority(int id, [FromBody] UpdatePatientPriorityRequest request)
+    {
+        var patient = db.Patients.Find(id);
+        if (patient is null) return NotFound();
+
+        patient.Priority = request.Priority;
+        patient.UpdatedAt = DateTime.UtcNow;
+        db.SaveChanges();
+
+        return Ok(ToDto(patient));
+    }
+
+    private static PatientResponseDto ToDto(Patient p) =>
+        new(p.Id, p.Name, p.LastName, p.IdentificationNumber, p.DateOfBirth, p.Gender,
+            p.Priority, p.LastConsultationAt, p.CreatedAt);
 }

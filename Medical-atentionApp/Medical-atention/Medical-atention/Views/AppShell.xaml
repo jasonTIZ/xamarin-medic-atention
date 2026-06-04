@@ -24,6 +24,9 @@
     <ShellContent Title="Pacientes"
                   ContentTemplate="{DataTemplate local:MainPage}" />
 
+    <ShellContent Title="Triaje"
+                  ContentTemplate="{DataTemplate views:TriagePage}" />
+
     <ShellContent Title="Perfil"
                   ContentTemplate="{DataTemplate views:ProfilePage}" />
 

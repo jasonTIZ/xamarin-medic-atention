@@ -8,6 +8,8 @@ public class Patient
     public string IdentificationNumber { get; set; } = string.Empty;
     public DateTime DateOfBirth { get; set; }
     public string Gender { get; set; } = string.Empty;
+    public PriorityLevel Priority { get; set; } = PriorityLevel.Medium;
+    public DateTime? LastConsultationAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
     public bool IsSynced { get; set; } = true;

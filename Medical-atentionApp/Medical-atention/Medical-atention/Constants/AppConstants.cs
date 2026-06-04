@@ -32,5 +32,6 @@ namespace Medical_atention.Constants
         public const string UserIdKey = "user_id";
         public const string UserNameKey = "user_name";
         public const string UserRoleKey = "user_role";
+        public const string LastPatientSyncKey = "last_patient_sync";
     }
 }
