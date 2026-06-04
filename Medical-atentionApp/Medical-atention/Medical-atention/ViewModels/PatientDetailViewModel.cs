@@ -38,6 +38,8 @@ namespace Medical_atention.ViewModels
 
         public PatientDetailViewModel(int id) : this(id, new PatientService()) { }
 
+        public int PatientId => _id;
+
         public PatientDetailViewModel(int id, IPatientService patientService)
         {
             _patientService = patientService;
@@ -101,6 +103,7 @@ namespace Medical_atention.ViewModels
                 _isLoading = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsNotLoading));
+                OnPropertyChanged(nameof(ShowEditButton));
                 ((Command)EditCommand).ChangeCanExecute();
             }
         }
@@ -177,13 +180,14 @@ namespace Medical_atention.ViewModels
         private void ApplyPatient(PatientResponseDto patient)
         {
             _id = patient.Id;
-            Name = patient.Name;
-            LastName = patient.LastName;
-            IdentificationNumber = patient.IdentificationNumber;
-            DateOfBirth = patient.DateOfBirth;
-            Gender = patient.Gender;
-            SelectedGender = patient.Gender;
+            Name = patient.Name ?? string.Empty;
+            LastName = patient.LastName ?? string.Empty;
+            IdentificationNumber = patient.IdentificationNumber ?? string.Empty;
+            DateOfBirth = patient.DateOfBirth == default ? new DateTime(1990, 1, 1) : patient.DateOfBirth;
+            Gender = patient.Gender ?? string.Empty;
+            SelectedGender = patient.Gender ?? string.Empty;
             CreatedAt = patient.CreatedAt;
+            OnPropertyChanged(nameof(ShowEditButton));
         }
 
         private void StartEdit()

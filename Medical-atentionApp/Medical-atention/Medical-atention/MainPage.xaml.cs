@@ -11,6 +11,9 @@ namespace Medical_atention
 {
     public partial class MainPage : ContentPage
     {
+        private const double MenuWidth = 260;
+        private const double MenuHeight = 220;
+
         private readonly PatientsViewModel _viewModel;
         private readonly IPatientService _patientService = new PatientService();
         private PatientResponseDto _menuPatient;
@@ -29,12 +32,47 @@ namespace Medical_atention
 
         private void OnMenuClicked(object sender, EventArgs e)
         {
-            if (((Button)sender).CommandParameter is PatientResponseDto patient)
+            if (!(((Button)sender).CommandParameter is PatientResponseDto patient))
+                return;
+
+            _menuPatient = patient;
+            MenuOverlay.IsVisible = true;
+            MenuPopup.IsVisible = true;
+
+            if (sender is View anchor)
+                Device.BeginInvokeOnMainThread(() => PositionMenuNear(anchor));
+        }
+
+        private void PositionMenuNear(View anchor)
+        {
+            var (x, y) = GetPositionOnPage(anchor);
+            var menuX = Math.Max(8, x + anchor.Width - MenuWidth);
+            var menuY = y + anchor.Height + 4;
+
+            var maxY = RootLayout.Height - MenuHeight - 8;
+            if (maxY > 0 && menuY > maxY)
+                menuY = Math.Max(8, y - MenuHeight - 4);
+
+            AbsoluteLayout.SetLayoutBounds(MenuPopup, new Rectangle(menuX, menuY, MenuWidth, MenuHeight));
+            AbsoluteLayout.SetLayoutFlags(MenuPopup, AbsoluteLayoutFlags.None);
+        }
+
+        private (double x, double y) GetPositionOnPage(VisualElement element)
+        {
+            double x = element.X;
+            double y = element.Y;
+            var parent = element.Parent as VisualElement;
+
+            while (parent != null)
             {
-                _menuPatient = patient;
-                MenuOverlay.IsVisible = true;
-                MenuPopup.IsVisible = true;
+                x += parent.X;
+                y += parent.Y;
+                if (parent == RootLayout)
+                    break;
+                parent = parent.Parent as VisualElement;
             }
+
+            return (x, y);
         }
 
         private void OnMenuDismissed(object sender, EventArgs e) => CloseMenu();

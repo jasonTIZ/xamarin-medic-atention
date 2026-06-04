@@ -5,8 +5,11 @@
              BackgroundColor="#F0F4F8"
              Title="Pacientes">
 
-    <Grid>
-        <StackLayout Padding="16,16,16,80" Spacing="0">
+    <AbsoluteLayout x:Name="RootLayout">
+
+        <StackLayout AbsoluteLayout.LayoutBounds="0,0,1,1"
+                     AbsoluteLayout.LayoutFlags="All"
+                     Padding="16,16,16,80" Spacing="0">
 
             <ActivityIndicator IsRunning="{Binding IsLoading}"
                                IsVisible="{Binding IsLoading}"
@@ -29,7 +32,8 @@
                        HorizontalTextAlignment="Center" />
             </StackLayout>
 
-            <CollectionView ItemsSource="{Binding Patients}"
+            <CollectionView x:Name="PatientsList"
+                            ItemsSource="{Binding Patients}"
                             SelectionMode="None">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -89,7 +93,8 @@
                CornerRadius="28"
                HeightRequest="56" WidthRequest="56"
                HasShadow="True"
-               VerticalOptions="End" HorizontalOptions="End"
+               AbsoluteLayout.LayoutBounds="1,1,56,56"
+               AbsoluteLayout.LayoutFlags="PositionProportional"
                Margin="0,0,24,24">
             <Frame.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnAddPatientTapped" />
@@ -103,7 +108,9 @@
 
         <BoxView x:Name="MenuOverlay"
                  Color="#80000000"
-                 IsVisible="False">
+                 IsVisible="False"
+                 AbsoluteLayout.LayoutBounds="0,0,1,1"
+                 AbsoluteLayout.LayoutFlags="All">
             <BoxView.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnMenuDismissed" />
             </BoxView.GestureRecognizers>
@@ -116,10 +123,9 @@
                Padding="0"
                HasShadow="True"
                BorderColor="#E2E8F0"
-               VerticalOptions="Center"
-               HorizontalOptions="End"
-               Margin="24,0,24,0"
-               WidthRequest="260">
+               WidthRequest="260"
+               AbsoluteLayout.LayoutBounds="0,0,260,220"
+               AbsoluteLayout.LayoutFlags="None">
             <StackLayout Spacing="0">
                 <Button Text="Ver Historial Completo"
                         Clicked="OnMenuHistorial"
@@ -154,6 +160,7 @@
                         Padding="16,14" />
             </StackLayout>
         </Frame>
-    </Grid>
+
+    </AbsoluteLayout>
 
 </ContentPage>
