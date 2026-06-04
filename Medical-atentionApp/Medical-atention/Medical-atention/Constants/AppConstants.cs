@@ -8,7 +8,7 @@ namespace Medical_atention.Constants
         public const string ApiBaseUrlEmulator = "http://10.0.2.2:5258";
 
         // Physical device (same Wi‑Fi as laptop)
-        public const string ApiBaseUrlPhysical = "http://192.168.100.5:5258";
+        public const string ApiBaseUrlPhysical = "http://192.168.100.54:5258";
 
         // iOS Simulator (if applicable)
         public const string ApiBaseUrlIosSimulator = "http://localhost:5258";
