@@ -45,6 +45,7 @@ namespace Medical_atention.ViewModels
                 if (_searchText == value) return;
                 _searchText = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(EmptyMessage));
                 ApplyFilter();
             }
         }
@@ -68,6 +69,11 @@ namespace Medical_atention.ViewModels
             get => _isOffline;
             set { _isOffline = value; OnPropertyChanged(); }
         }
+
+        public string EmptyMessage =>
+            string.IsNullOrWhiteSpace(_searchText)
+                ? "No hay pacientes registrados"
+                : "No se encontraron pacientes con ese criterio";
 
         public ICommand RefreshCommand { get; }
         public ICommand PatientSelectedCommand { get; }
@@ -123,9 +129,26 @@ namespace Medical_atention.ViewModels
                     (p.FullName?.ToLowerInvariant().Contains(query) ?? false) ||
                     (p.DocumentNumber?.ToLowerInvariant().Contains(query) ?? false)).ToList();
 
-            _filteredPatients.Clear();
+            for (var i = _filteredPatients.Count - 1; i >= 0; i--)
+            {
+                if (!filtered.Any(f => f.Id == _filteredPatients[i].Id))
+                    _filteredPatients.RemoveAt(i);
+            }
+
             foreach (var patient in filtered)
-                _filteredPatients.Add(patient);
+            {
+                if (!_filteredPatients.Any(p => p.Id == patient.Id))
+                    _filteredPatients.Add(patient);
+            }
+
+            for (var i = 0; i < filtered.Count; i++)
+            {
+                var item = _filteredPatients.FirstOrDefault(p => p.Id == filtered[i].Id);
+                if (item == null) continue;
+                var currentIndex = _filteredPatients.IndexOf(item);
+                if (currentIndex >= 0 && currentIndex != i)
+                    _filteredPatients.Move(currentIndex, i);
+            }
         }
 
         private async Task OnPatientSelectedAsync(Patient patient)
