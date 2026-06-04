@@ -106,7 +106,24 @@ public class ConsultationsController(AppDbContext db) : ControllerBase
         var consultation = db.Consultations.Find(id);
         if (consultation is null) return NotFound();
 
-        return Ok(new ConsultationResponseDto(
+        return Ok(MapConsultation(consultation));
+    }
+
+    [HttpPut("{id:int}")]
+    public IActionResult Update(int id, [FromBody] ConsultationUpdateDto request)
+    {
+        var consultation = db.Consultations.Find(id);
+        if (consultation is null) return NotFound();
+
+        consultation.Treatment = request.Treatment?.Trim() ?? string.Empty;
+        consultation.Notes = request.Notes?.Trim() ?? string.Empty;
+        db.SaveChanges();
+
+        return Ok(MapConsultation(consultation));
+    }
+
+    private static ConsultationResponseDto MapConsultation(Consultation consultation)
+        => new(
             consultation.Id,
             consultation.PatientId,
             consultation.ConsultationDate,
@@ -115,6 +132,5 @@ public class ConsultationsController(AppDbContext db) : ControllerBase
             consultation.Treatment,
             consultation.Notes,
             consultation.Priority,
-            consultation.CreatedAt));
-    }
+            consultation.CreatedAt);
 }
