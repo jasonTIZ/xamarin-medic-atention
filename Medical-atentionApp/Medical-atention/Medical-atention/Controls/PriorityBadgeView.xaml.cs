@@ -53,7 +53,7 @@ namespace Medical_atention.Controls
             BadgeFrame.BackgroundColor = info.BackgroundColor;
             BadgeFrame.BorderColor = info.BorderColor;
             BadgeFrame.Padding = metrics.Padding;
-            BadgeFrame.CornerRadius = metrics.CornerRadius;
+            BadgeFrame.CornerRadius = (float)metrics.CornerRadius;
 
             IconLabel.Text = info.Icon;
             IconLabel.TextColor = info.ForegroundColor;
