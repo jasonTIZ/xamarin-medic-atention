@@ -48,12 +48,29 @@ namespace Medical_atention.ViewModels
             IsLoading = true;
             try
             {
-                Patients = new ObservableCollection<PatientResponseDto>(
-                    await _patientService.GetAllPatientsAsync(await SecureStorage.GetAsync(AppConstants.TokenKey)));
+                var patients = await _patientService.GetAllPatientsAsync(await SecureStorage.GetAsync(AppConstants.TokenKey));
+                foreach (var patient in patients)
+                {
+                    if (string.IsNullOrWhiteSpace(patient.Priority))
+                        patient.Priority = ResolveDefaultPriority(patient.Id);
+                }
+
+                Patients = new ObservableCollection<PatientResponseDto>(patients);
                 IsEmpty = !Patients.Any();
             }
             catch (Exception) { }
             finally { IsLoading = false; }
+        }
+
+        private static string ResolveDefaultPriority(int id)
+        {
+            switch (id % 4)
+            {
+                case 0: return "urgent";
+                case 1: return "high";
+                case 2: return "medium";
+                default: return "low";
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

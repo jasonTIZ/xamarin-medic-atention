@@ -2,14 +2,15 @@ using Medical_atention.Constants;
 using Medical_atention.Models;
 using Medical_atention.Services;
 using Medical_atention.ViewModels;
-using Medical_atention.Views;
 using System;
 using Xamarin.Essentials;
 using Xamarin.Forms;
+using Xamarin.Forms.Xaml;
 
-namespace Medical_atention
+namespace Medical_atention.Views
 {
-    public partial class MainPage : ContentPage
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class PatientListPage : ContentPage
     {
         private const double MenuWidth = 260;
         private const double MenuHeight = 220;
@@ -18,7 +19,7 @@ namespace Medical_atention
         private readonly IPatientService _patientService = new PatientService();
         private PatientResponseDto _menuPatient;
 
-        public MainPage()
+        public PatientListPage()
         {
             InitializeComponent();
             BindingContext = _viewModel = new PatientsViewModel();
@@ -100,8 +101,10 @@ namespace Medical_atention
 
         private async void OnMenuNewConsultation(object sender, EventArgs e)
         {
+            var patient = _menuPatient;
             CloseMenu();
-            await DisplayAlert("Nueva consulta", "Función no disponible aún.", "OK");
+            if (patient != null)
+                await Shell.Current.GoToAsync($"{nameof(ConsultationDetailPage)}?patientId={patient.Id}&priority={patient.Priority}");
         }
 
         private async void OnMenuDelete(object sender, EventArgs e)

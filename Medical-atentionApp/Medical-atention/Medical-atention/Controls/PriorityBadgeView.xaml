@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Medical_atention.Controls.PriorityBadgeView"
+             x:Name="Root">
+
+    <Frame x:Name="BadgeFrame"
+           HasShadow="False"
+           CornerRadius="12"
+           Padding="8,4"
+           BorderColor="Transparent">
+        <StackLayout x:Name="BadgeLayout"
+                     Orientation="Horizontal"
+                     Spacing="4"
+                     VerticalOptions="Center">
+            <Label x:Name="IconLabel"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"
+                   FontAttributes="Bold" />
+            <Label x:Name="TextLabel"
+                   VerticalOptions="Center"
+                   FontAttributes="Bold" />
+        </StackLayout>
+    </Frame>
+
+</ContentView>

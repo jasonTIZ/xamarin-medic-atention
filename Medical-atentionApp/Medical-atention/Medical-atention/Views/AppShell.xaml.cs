@@ -14,6 +14,7 @@ namespace Medical_atention.Views
             InitializeComponent();
             Routing.RegisterRoute(nameof(RegisterPatientPage), typeof(RegisterPatientPage));
             Routing.RegisterRoute(nameof(PatientDetailPage), typeof(PatientDetailPage));
+            Routing.RegisterRoute(nameof(ConsultationDetailPage), typeof(ConsultationDetailPage));
             _ = LoadUserInfoAsync();
         }
 

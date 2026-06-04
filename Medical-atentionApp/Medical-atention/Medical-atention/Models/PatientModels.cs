@@ -21,6 +21,7 @@ namespace Medical_atention.Models
         public DateTime DateOfBirth { get; set; }
         public string Gender { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string Priority { get; set; } = "medium";
 
         public string FullName => $"{Name} {LastName}".Trim();
 
