@@ -60,7 +60,47 @@ public class ConsultationsController(AppDbContext db) : ControllerBase
                 consultation.CreatedAt));
     }
 
-    [HttpGet("{id}")]
+    [HttpGet]
+    public IActionResult GetByPatient(
+        [FromQuery(Name = "patient_id")] int patientId,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null)
+    {
+        if (patientId <= 0)
+            return BadRequest(new { field = "patient_id", message = "Paciente inválido" });
+
+        if (db.Patients.Find(patientId) is null)
+            return NotFound(new { field = "patient_id", message = "Paciente no encontrado" });
+
+        var query = db.Consultations.Where(c => c.PatientId == patientId);
+
+        if (from.HasValue)
+            query = query.Where(c => c.ConsultationDate >= from.Value.Date);
+
+        if (to.HasValue)
+        {
+            var end = to.Value.Date.AddDays(1).AddTicks(-1);
+            query = query.Where(c => c.ConsultationDate <= end);
+        }
+
+        var list = query
+            .OrderByDescending(c => c.ConsultationDate)
+            .Select(c => new ConsultationResponseDto(
+                c.Id,
+                c.PatientId,
+                c.ConsultationDate,
+                c.Symptoms,
+                c.Diagnosis,
+                c.Treatment,
+                c.Notes,
+                c.Priority,
+                c.CreatedAt))
+            .ToList();
+
+        return Ok(list);
+    }
+
+    [HttpGet("{id:int}")]
     public IActionResult GetById(int id)
     {
         var consultation = db.Consultations.Find(id);

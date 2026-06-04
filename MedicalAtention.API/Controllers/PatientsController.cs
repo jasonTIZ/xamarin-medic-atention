@@ -45,20 +45,38 @@ public class PatientsController(AppDbContext db) : ControllerBase
         db.Patients.Add(patient);
         db.SaveChanges();
 
-        return CreatedAtAction(nameof(GetById), new { id = patient.Id },
-            new PatientResponseDto(patient.Id, patient.Name, patient.LastName, patient.IdentificationNumber, patient.DateOfBirth, patient.Gender, patient.CreatedAt));
+        return CreatedAtAction(nameof(GetById), new { id = patient.Id }, MapPatient(patient));
     }
 
     [HttpGet]
     public IActionResult GetAll()
-        => Ok(db.Patients.Select(p => new PatientResponseDto(p.Id, p.Name, p.LastName, p.IdentificationNumber, p.DateOfBirth, p.Gender, p.CreatedAt)));
+        => Ok(db.Patients.AsEnumerable().Select(MapPatient));
 
     [HttpGet("{id}")]
     public IActionResult GetById(int id)
     {
         var patient = db.Patients.Find(id);
         if (patient is null) return NotFound();
-        return Ok(new PatientResponseDto(patient.Id, patient.Name, patient.LastName, patient.IdentificationNumber, patient.DateOfBirth, patient.Gender, patient.CreatedAt));
+        return Ok(MapPatient(patient));
+    }
+
+    private PatientResponseDto MapPatient(Patient patient)
+    {
+        var last = db.Consultations
+            .Where(c => c.PatientId == patient.Id)
+            .OrderByDescending(c => c.ConsultationDate)
+            .FirstOrDefault();
+
+        return new PatientResponseDto(
+            patient.Id,
+            patient.Name,
+            patient.LastName,
+            patient.IdentificationNumber,
+            patient.DateOfBirth,
+            patient.Gender,
+            patient.CreatedAt,
+            last?.Priority,
+            last?.ConsultationDate);
     }
 
     [HttpPut("{id}")]
@@ -90,7 +108,7 @@ public class PatientsController(AppDbContext db) : ControllerBase
         patient.UpdatedAt = DateTime.UtcNow;
         db.SaveChanges();
 
-        return Ok(new PatientResponseDto(patient.Id, patient.Name, patient.LastName, patient.IdentificationNumber, patient.DateOfBirth, patient.Gender, patient.CreatedAt));
+        return Ok(MapPatient(patient));
     }
 
     [HttpDelete("{id}")]
