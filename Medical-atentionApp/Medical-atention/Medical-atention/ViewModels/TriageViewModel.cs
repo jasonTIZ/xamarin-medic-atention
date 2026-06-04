@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Medical_atention.ViewModels
@@ -92,7 +93,7 @@ namespace Medical_atention.ViewModels
         public bool ShouldAutoRefresh()
         {
             return _autoRefreshEnabled
-                && Connectivity.NetworkAccess == NetworkAccess.Internet
+                && _patientService.IsOnline()
                 && !IsLoading;
         }
 
@@ -105,7 +106,7 @@ namespace Medical_atention.ViewModels
 
                 var (patients, fromCache, error) = await _patientService.GetPatientsByPriorityAsync();
 
-                IsOffline = fromCache || Connectivity.NetworkAccess != NetworkAccess.Internet;
+                IsOffline = fromCache || !_patientService.IsOnline();
                 await UpdateLastSyncTextAsync(fromCache);
 
                 if (!string.IsNullOrEmpty(error) && patients.Count == 0)
@@ -145,7 +146,7 @@ namespace Medical_atention.ViewModels
                 return false;
             }
 
-            if (Connectivity.NetworkAccess != NetworkAccess.Internet)
+            if (!_patientService.IsOnline())
                 ShowSnackbar("Prioridad guardada localmente; se sincronizará al reconectar");
 
             return true;
