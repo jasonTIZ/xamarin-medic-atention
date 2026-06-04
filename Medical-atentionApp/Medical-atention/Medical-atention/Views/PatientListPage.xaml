@@ -37,7 +37,7 @@
                        FontAttributes="Bold"
                        TextColor="#1A365D" />
                 <SearchBar Text="{Binding SearchText, Mode=TwoWay}"
-                           Placeholder="Buscar por nombre o cédula"
+                           Placeholder="Buscar por nombre o cédula (sin guiones)"
                            BackgroundColor="White"
                            TextColor="#1A365D"
                            PlaceholderColor="#A0AEC0"

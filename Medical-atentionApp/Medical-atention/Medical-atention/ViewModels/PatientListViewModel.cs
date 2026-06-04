@@ -42,8 +42,9 @@ namespace Medical_atention.ViewModels
             get => _searchText;
             set
             {
-                if (_searchText == value) return;
-                _searchText = value;
+                var sanitized = SanitizeSearchInput(value);
+                if (_searchText == sanitized) return;
+                _searchText = sanitized;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(EmptyMessage));
                 ApplyFilter();
@@ -122,12 +123,34 @@ namespace Medical_atention.ViewModels
 
         private void ApplyFilter()
         {
-            var query = _searchText?.Trim().ToLowerInvariant() ?? string.Empty;
-            var filtered = string.IsNullOrEmpty(query)
-                ? _allPatients
-                : _allPatients.Where(p =>
-                    (p.FullName?.ToLowerInvariant().Contains(query) ?? false) ||
-                    (p.DocumentNumber?.ToLowerInvariant().Contains(query) ?? false)).ToList();
+            var query = SanitizeSearchInput(_searchText);
+            if (string.IsNullOrEmpty(query))
+            {
+                ReplaceFilteredList(_allPatients);
+                return;
+            }
+
+            var queryLower = query.ToLowerInvariant();
+            var queryNormalized = NormalizeForComparison(query);
+
+            var filtered = _allPatients.Where(p =>
+            {
+                var fullName = p.FullName ?? string.Empty;
+                var nameMatch = fullName.ToLowerInvariant().Contains(queryLower)
+                    || NormalizeForComparison(fullName).Contains(queryNormalized);
+
+                var documentNormalized = NormalizeForComparison(p.DocumentNumber);
+                var documentMatch = !string.IsNullOrEmpty(queryNormalized)
+                    && documentNormalized.Contains(queryNormalized);
+
+                return nameMatch || documentMatch;
+            }).ToList();
+
+            ReplaceFilteredList(filtered);
+        }
+
+        private void ReplaceFilteredList(List<Patient> filtered)
+        {
 
             for (var i = _filteredPatients.Count - 1; i >= 0; i--)
             {
@@ -149,6 +172,30 @@ namespace Medical_atention.ViewModels
                 if (currentIndex >= 0 && currentIndex != i)
                     _filteredPatients.Move(currentIndex, i);
             }
+        }
+
+        /// <summary>
+        /// Trim and collapse extra spaces in the search box text.
+        /// </summary>
+        private static string SanitizeSearchInput(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            var parts = value.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            return string.Join(" ", parts);
+        }
+
+        /// <summary>
+        /// Remove spaces, dashes and symbols so cédula "1-2345-6789" matches "123456789" or "2345".
+        /// </summary>
+        private static string NormalizeForComparison(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            var chars = value.Where(char.IsLetterOrDigit).ToArray();
+            return new string(chars).ToLowerInvariant();
         }
 
         private async Task OnPatientSelectedAsync(Patient patient)
