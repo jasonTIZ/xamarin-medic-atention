@@ -52,7 +52,10 @@
                                    TextColor="#1A365D" />
                             <SearchBar Text="{Binding SearchText}"
                                        Placeholder="Buscar por nombre o cédula"
-                                       BackgroundColor="White" />
+                                       BackgroundColor="White"
+                                       TextColor="#1A365D"
+                                       PlaceholderColor="#A0AEC0"
+                                       CancelButtonColor="#2C7BE5" />
                         </StackLayout>
                     </CollectionView.Header>
 
