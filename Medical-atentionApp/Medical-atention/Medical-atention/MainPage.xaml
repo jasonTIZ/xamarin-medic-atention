@@ -1,24 +1,79 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Medical_atention.MainPage">
+             x:Class="Medical_atention.MainPage"
+             BackgroundColor="#F0F4F8"
+             Title="Pacientes">
 
-    <StackLayout>
-        <Frame BackgroundColor="#2196F3" Padding="24" CornerRadius="0">
-            <Label Text="Welcome to Xamarin.Forms!" HorizontalTextAlignment="Center" TextColor="White" FontSize="36"/>
+    <Grid>
+        <StackLayout Padding="16,16,16,80" Spacing="0">
+
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                               IsVisible="{Binding IsLoading}"
+                               Color="#2C7BE5"
+                               Margin="0,40,0,0" />
+
+            <StackLayout IsVisible="{Binding IsEmpty}"
+                         VerticalOptions="CenterAndExpand"
+                         HorizontalOptions="CenterAndExpand"
+                         Spacing="12"
+                         Margin="0,80,0,0">
+                <Label Text="Sin pacientes registrados"
+                       FontSize="16" FontAttributes="Bold"
+                       TextColor="#718096"
+                       HorizontalOptions="Center" />
+                <Label Text="Registra el primero usando el botón +"
+                       FontSize="13"
+                       TextColor="#A0AEC0"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
+            </StackLayout>
+
+            <CollectionView ItemsSource="{Binding Patients}"
+                            SelectionMode="Single"
+                            SelectionChanged="OnPatientSelected">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                               Padding="16,12" HasShadow="False"
+                               BackgroundColor="White"
+                               Margin="0,0,0,10">
+                            <StackLayout Spacing="2">
+                                <Label FontSize="15" FontAttributes="Bold" TextColor="#1A365D">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Name}" />
+                                            <Span Text=" " />
+                                            <Span Text="{Binding LastName}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <Label Text="{Binding IdentificationNumber, StringFormat='Cédula: {0}'}"
+                                       FontSize="12"
+                                       TextColor="#718096" />
+                            </StackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </StackLayout>
+
+        <Frame BackgroundColor="#2C7BE5"
+               CornerRadius="28"
+               HeightRequest="56" WidthRequest="56"
+               HasShadow="True"
+               VerticalOptions="End" HorizontalOptions="End"
+               Margin="0,0,24,24">
+            <Frame.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnAddPatientTapped" />
+            </Frame.GestureRecognizers>
+            <Label Text="+"
+                   FontSize="30" FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" />
         </Frame>
-        <Label Text="Start developing now" FontSize="Title" Padding="30,10,30,10"/>
-        <Label Text="Make changes to your XAML file and save to see your UI update in the running app with XAML Hot Reload. Give it a try!" FontSize="16" Padding="30,0,30,0"/>
-        <Label FontSize="16" Padding="30,24,30,0">
-            <Label.FormattedText>
-                <FormattedString>
-                    <FormattedString.Spans>
-                        <Span Text="Learn more at "/>
-                        <Span Text="https://aka.ms/xamarin-quickstart" FontAttributes="Bold"/>
-                    </FormattedString.Spans>
-                </FormattedString>
-            </Label.FormattedText>
-        </Label>
-    </StackLayout>
+    </Grid>
 
 </ContentPage>
