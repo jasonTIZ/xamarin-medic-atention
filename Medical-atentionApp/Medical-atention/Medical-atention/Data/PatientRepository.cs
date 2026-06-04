@@ -1,5 +1,6 @@
 using Medical_atention.Models;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Medical_atention.Data
