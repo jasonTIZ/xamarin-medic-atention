@@ -1,6 +1,5 @@
 using Android.Content;
 using Android.Content.Res;
-using Android.Graphics;
 using Google.Android.Material.BottomNavigation;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
@@ -20,8 +19,8 @@ namespace Medical_atention.Droid.Renderers
 
     public class CustomShellBottomNavViewAppearanceTracker : ShellBottomNavViewAppearanceTracker
     {
-        static readonly Color SelectedColor = Color.ParseColor("#2196F3");
-        static readonly Color UnselectedColor = Color.ParseColor("#757575");
+        static readonly Android.Graphics.Color SelectedColor = Android.Graphics.Color.ParseColor("#2196F3");
+        static readonly Android.Graphics.Color UnselectedColor = Android.Graphics.Color.ParseColor("#757575");
         static readonly ColorStateList ItemColorStateList = CreateItemColorStateList();
 
         public CustomShellBottomNavViewAppearanceTracker(IShellContext shellContext, ShellItem shellItem)
