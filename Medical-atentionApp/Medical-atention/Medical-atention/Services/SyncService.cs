@@ -60,6 +60,10 @@ namespace Medical_atention.Services
                     return await SyncPatientPriorityAsync(item);
                 case SyncOperation.CreatePatient:
                     return await SyncCreatePatientAsync(item);
+                case SyncOperation.UpdatePatient:
+                    return await SyncUpdatePatientAsync(item);
+                case SyncOperation.DeletePatient:
+                    return await SyncDeletePatientAsync(item);
                 default:
                     Debug.WriteLine($"[SyncService] Operación desconocida: {item.Operation}");
                     return false;
@@ -92,6 +96,41 @@ namespace Medical_atention.Services
                 entity.PendingPriority = null;
                 await _patientRepository.UpsertAsync(entity);
                 return true;
+            }
+        }
+
+        private async Task<bool> SyncUpdatePatientAsync(SyncQueueEntity item)
+        {
+            var request = JsonConvert.DeserializeObject<PatientRequestDto>(item.PayloadJson);
+            var patient = await _patientRepository.GetByLocalIdAsync(item.EntityLocalId);
+            if (patient == null || patient.Id <= 0) return false;
+
+            using (var client = await ApiClient.CreateAsync())
+            {
+                var content = new StringContent(
+                    JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+                var response = await client.PutAsync($"api/patients/{patient.Id}", content);
+                if (!response.IsSuccessStatusCode) return false;
+
+                var json = await response.Content.ReadAsStringAsync();
+                var dto = JsonConvert.DeserializeObject<PatientResponseDto>(json);
+                var entity = PatientMapper.FromDtoToEntity(dto);
+                entity.LocalId = patient.LocalId;
+                entity.PendingSync = false;
+                await _patientRepository.UpsertAsync(entity);
+                return true;
+            }
+        }
+
+        private async Task<bool> SyncDeletePatientAsync(SyncQueueEntity item)
+        {
+            var payload = JsonConvert.DeserializeObject<DeletePatientSyncPayload>(item.PayloadJson);
+            if (payload?.PatientId <= 0) return true;
+
+            using (var client = await ApiClient.CreateAsync())
+            {
+                var response = await client.DeleteAsync($"api/patients/{payload.PatientId}");
+                return response.IsSuccessStatusCode;
             }
         }
 

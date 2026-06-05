@@ -42,4 +42,9 @@ namespace Medical_atention.Models
     {
         public PriorityLevel Priority { get; set; }
     }
+
+    public class DeletePatientSyncPayload
+    {
+        public int PatientId { get; set; }
+    }
 }

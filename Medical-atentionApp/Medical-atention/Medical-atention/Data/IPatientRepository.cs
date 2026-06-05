@@ -16,6 +16,7 @@ namespace Medical_atention.Data
         Task ReplaceAllAsync(IEnumerable<PatientEntity> patients);
         Task UpsertAsync(PatientEntity patient);
         Task DeleteAsync(int id);
+        Task DeleteByLocalIdAsync(Guid localId);
         Task SetPendingPriorityAsync(int id, PriorityLevel priority);
         Task ClearPendingPriorityAsync(int id, PriorityLevel syncedPriority);
         Task<List<PatientEntity>> GetPendingPriorityUpdatesAsync();

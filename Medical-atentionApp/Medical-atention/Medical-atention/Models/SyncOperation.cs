@@ -9,6 +9,8 @@ namespace Medical_atention.Models
     public static class SyncOperation
     {
         public const string CreatePatient = "CreatePatient";
+        public const string UpdatePatient = "UpdatePatient";
+        public const string DeletePatient = "DeletePatient";
         public const string UpdatePatientPriority = "UpdatePatientPriority";
         public const string CreateConsultation = "CreateConsultation";
     }

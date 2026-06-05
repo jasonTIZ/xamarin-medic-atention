@@ -58,14 +58,28 @@ namespace Medical_atention.Services
 
         public async Task<PatientResponseDto> GetPatientAsync(int id, string token)
         {
+            if (!IsOnline())
+            {
+                var offline = await _repository.GetByIdAsync(id);
+                return offline == null ? null : MapEntityToDto(offline);
+            }
+
             try
             {
                 using (var client = await CreateClientAsync(token))
                 {
                     var response = await client.GetAsync($"api/patients/{id}");
-                    if (!response.IsSuccessStatusCode) return null;
-                    return JsonConvert.DeserializeObject<PatientResponseDto>(
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var fallback = await _repository.GetByIdAsync(id);
+                        return fallback == null ? null : MapEntityToDto(fallback);
+                    }
+
+                    var dto = JsonConvert.DeserializeObject<PatientResponseDto>(
                         await response.Content.ReadAsStringAsync());
+                    if (dto != null)
+                        await _repository.UpsertAsync(PatientMapper.FromDtoToEntity(dto));
+                    return dto;
                 }
             }
             catch (Exception)
@@ -77,28 +91,46 @@ namespace Medical_atention.Services
 
         public async Task<List<PatientResponseDto>> GetAllPatientsAsync(string token)
         {
+            if (!IsOnline())
+                return await GetAllPatientsFromLocalAsync();
+
             try
             {
                 using (var client = await CreateClientAsync(token))
                 {
                     var response = await client.GetAsync("api/patients");
-                    if (!response.IsSuccessStatusCode) return new List<PatientResponseDto>();
-                    return JsonConvert.DeserializeObject<List<PatientResponseDto>>(
-                               await response.Content.ReadAsStringAsync())
-                           ?? new List<PatientResponseDto>();
+                    if (!response.IsSuccessStatusCode)
+                        return await GetAllPatientsFromLocalAsync();
+
+                    var patients = JsonConvert.DeserializeObject<List<PatientResponseDto>>(
+                                       await response.Content.ReadAsStringAsync())
+                                   ?? new List<PatientResponseDto>();
+
+                    if (patients.Count > 0)
+                    {
+                        await _repository.ReplaceAllAsync(patients.Select(PatientMapper.FromDtoToEntity));
+                        LocalDataChangedHelper.NotifyPatientsChanged();
+                    }
+
+                    return patients;
                 }
             }
             catch (Exception)
             {
-                return (await _repository.GetAllAsync())
-                    .Select(MapEntityToDto)
-                    .ToList();
+                return await GetAllPatientsFromLocalAsync();
             }
         }
 
         public async Task<(PatientResponseDto patient, string error)> UpdateAsync(
             int id, PatientRequestDto request, string token)
         {
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null)
+                return (null, "Paciente no encontrado");
+
+            if (!IsOnline())
+                return await UpdatePatientLocallyAsync(entity, request);
+
             try
             {
                 using (var client = await CreateClientAsync(token))
@@ -122,25 +154,37 @@ namespace Medical_atention.Services
             }
             catch (Exception)
             {
-                return (null, "Sin conexión, verifica tu red");
+                return await UpdatePatientLocallyAsync(entity, request);
             }
         }
 
         public async Task<bool> DeleteAsync(int id, string token)
         {
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null)
+                return false;
+
+            if (!IsOnline())
+                return await DeletePatientLocallyAsync(entity);
+
             try
             {
                 using (var client = await CreateClientAsync(token))
                 {
                     var response = await client.DeleteAsync($"api/patients/{id}");
                     if (response.IsSuccessStatusCode)
+                    {
                         await _repository.DeleteAsync(id);
-                    return response.IsSuccessStatusCode;
+                        LocalDataChangedHelper.NotifyPatientsChanged();
+                        return true;
+                    }
+
+                    return false;
                 }
             }
             catch (Exception)
             {
-                return false;
+                return await DeletePatientLocallyAsync(entity);
             }
         }
 
@@ -238,6 +282,14 @@ namespace Medical_atention.Services
             var cached = (await _repository.GetAllSortedByPriorityAsync())
                 .Select(PatientMapper.ToDomain)
                 .ToList();
+
+            await ApplyConsultationPrioritiesAsync(cached);
+            cached = cached
+                .OrderBy(p => p.EffectivePriority)
+                .ThenBy(p => p.LastName)
+                .ThenBy(p => p.FirstName)
+                .ToList();
+
             if (cached.Count > 0)
                 return (cached, true, null);
 
@@ -340,6 +392,77 @@ namespace Medical_atention.Services
                 Priority = PatientMapper.ToPriorityString(domain.EffectivePriority),
                 LastConsultationDate = domain.LastConsultationAt
             };
+        }
+
+        private async Task<List<PatientResponseDto>> GetAllPatientsFromLocalAsync()
+        {
+            return (await _repository.GetAllAsync())
+                .Select(MapEntityToDto)
+                .ToList();
+        }
+
+        private async Task<(PatientResponseDto patient, string error)> UpdatePatientLocallyAsync(
+            PatientEntity entity, PatientRequestDto request)
+        {
+            entity.FirstName = request.Name?.Trim() ?? string.Empty;
+            entity.LastName = request.LastName?.Trim() ?? string.Empty;
+            entity.DocumentNumber = request.IdentificationNumber?.Trim() ?? string.Empty;
+            entity.DateOfBirth = request.DateOfBirth;
+            entity.Gender = request.Gender ?? string.Empty;
+            entity.PendingSync = true;
+            await _repository.UpsertAsync(entity);
+
+            await _syncQueueRepository.RemoveByEntityLocalIdAsync(
+                entity.LocalId, SyncOperation.UpdatePatient);
+            await _syncQueueRepository.EnqueueAsync(new SyncQueueEntity
+            {
+                EntityType = SyncEntityType.Patient,
+                EntityLocalId = entity.LocalId,
+                Operation = SyncOperation.UpdatePatient,
+                PayloadJson = JsonConvert.SerializeObject(request)
+            });
+
+            LocalDataChangedHelper.NotifyPatientsChanged();
+            return (MapEntityToDto(entity), null);
+        }
+
+        private async Task<bool> DeletePatientLocallyAsync(PatientEntity entity)
+        {
+            if (entity.Id <= 0)
+            {
+                await _syncQueueRepository.RemoveByEntityLocalIdAsync(
+                    entity.LocalId, SyncOperation.CreatePatient);
+                await _repository.DeleteByLocalIdAsync(entity.LocalId);
+                LocalDataChangedHelper.NotifyPatientsChanged();
+                return true;
+            }
+
+            await _repository.DeleteAsync(entity.Id);
+            await _syncQueueRepository.EnqueueAsync(new SyncQueueEntity
+            {
+                EntityType = SyncEntityType.Patient,
+                EntityLocalId = entity.LocalId,
+                Operation = SyncOperation.DeletePatient,
+                PayloadJson = JsonConvert.SerializeObject(new { PatientId = entity.Id })
+            });
+            LocalDataChangedHelper.NotifyPatientsChanged();
+            return true;
+        }
+
+        private static async Task ApplyConsultationPrioritiesAsync(List<Patient> patients)
+        {
+            var localPriorities = await LocalDatabase.Instance.GetLatestPrioritiesByPatientAsync();
+            foreach (var patient in patients)
+            {
+                if (!localPriorities.TryGetValue(patient.Id, out var local))
+                    continue;
+
+                if (patient.LastConsultationAt == null || local.ConsultationDate > patient.LastConsultationAt)
+                {
+                    patient.Priority = PatientMapper.ParsePriority(local.Priority);
+                    patient.LastConsultationAt = local.ConsultationDate;
+                }
+            }
         }
 
         private static async Task<List<Patient>> FetchPatientsFromApiAsync(string path)

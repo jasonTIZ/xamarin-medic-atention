@@ -131,6 +131,14 @@ namespace Medical_atention.Data
             await LocalDatabase.Connection.DeleteAsync<PatientEntity>(id);
         }
 
+        public async Task DeleteByLocalIdAsync(Guid localId)
+        {
+            await LocalDatabase.InitializeAsync();
+            var patient = await GetByLocalIdAsync(localId);
+            if (patient != null)
+                await LocalDatabase.Connection.DeleteAsync(patient);
+        }
+
         public async Task SetPendingPriorityAsync(int id, PriorityLevel priority)
         {
             await LocalDatabase.InitializeAsync();
