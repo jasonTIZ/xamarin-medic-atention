@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:conv="clr-namespace:Medical_atention.Converters"
+             xmlns:controls="clr-namespace:Medical_atention.Controls"
              x:Class="Medical_atention.Views.TriagePage"
              BackgroundColor="#F0F4F8"
              Title="Triaje">
@@ -16,19 +17,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Frame Grid.Row="0"
-               IsVisible="{Binding IsOffline}"
-               BackgroundColor="#FFF5F5"
-               BorderColor="#FC8181"
-               CornerRadius="0"
-               Padding="12,8"
-               HasShadow="False"
-               Margin="0">
-            <Label Text="{Binding LastSyncText}"
-                   FontSize="12"
-                   TextColor="#C53030"
-                   HorizontalTextAlignment="Center" />
-        </Frame>
+        <controls:OfflineBannerView x:Name="OfflineBanner" Grid.Row="0" />
 
         <RefreshView x:Name="RefreshHost"
                      Grid.Row="1"

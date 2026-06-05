@@ -22,7 +22,6 @@ namespace Medical_atention.ViewModels
         private DateTime _filterTo = DateTime.Today;
         private bool _isLoading;
         private bool _isEmpty;
-        private bool _showOfflineIndicator;
 
         public ConsultationHistoryViewModel() : this(new ConsultationService()) { }
 
@@ -31,8 +30,6 @@ namespace Medical_atention.ViewModels
             _consultationService = consultationService;
             _filterFrom = new DateTime(DateTime.Today.Year, 1, 1);
             FilterCommand = new Command(async () => await LoadAsync());
-            UpdateOfflineIndicator();
-            Connectivity.ConnectivityChanged += (_, __) => UpdateOfflineIndicator();
         }
 
         public ObservableCollection<ConsultationListItem> Consultations { get; } = new ObservableCollection<ConsultationListItem>();
@@ -65,12 +62,6 @@ namespace Medical_atention.ViewModels
         {
             get => _isEmpty;
             set { _isEmpty = value; OnPropertyChanged(); }
-        }
-
-        public bool ShowOfflineIndicator
-        {
-            get => _showOfflineIndicator;
-            private set { _showOfflineIndicator = value; OnPropertyChanged(); }
         }
 
         public ICommand FilterCommand { get; }
@@ -116,12 +107,8 @@ namespace Medical_atention.ViewModels
             finally
             {
                 IsLoading = false;
-                UpdateOfflineIndicator();
             }
         }
-
-        private void UpdateOfflineIndicator()
-            => ShowOfflineIndicator = Connectivity.NetworkAccess != NetworkAccess.Internet;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

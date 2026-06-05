@@ -6,7 +6,10 @@
              BackgroundColor="#F0F4F8"
              Title="Nueva Consulta">
 
-    <Grid>
+    <Grid RowDefinitions="Auto,*">
+        <controls:OfflineBannerView x:Name="OfflineBanner" Grid.Row="0" />
+
+        <Grid Grid.Row="1">
         <ScrollView>
             <StackLayout Padding="24,20,24,100" Spacing="0">
 
@@ -197,23 +200,6 @@
             </StackLayout>
         </ScrollView>
 
-        <Frame IsVisible="{Binding ShowOfflineIndicator}"
-               BackgroundColor="White"
-               BorderColor="#CBD5E0"
-               CornerRadius="24"
-               Padding="10"
-               HasShadow="True"
-               WidthRequest="48"
-               HeightRequest="48"
-               VerticalOptions="End"
-               HorizontalOptions="End"
-               Margin="0,0,20,24">
-            <Label Text="☁🕐"
-                   FontSize="16"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Center" />
-        </Frame>
-
         <Frame IsVisible="{Binding IsSnackbarVisible}"
                BackgroundColor="#323232"
                CornerRadius="8"
@@ -228,6 +214,7 @@
                    HorizontalOptions="Center"
                    HorizontalTextAlignment="Center" />
         </Frame>
+        </Grid>
     </Grid>
 
 </ContentPage>

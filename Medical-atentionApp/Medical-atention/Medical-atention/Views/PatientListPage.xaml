@@ -6,7 +6,10 @@
              BackgroundColor="#F0F4F8"
              Title="Pacientes">
 
-    <Grid>
+    <Grid RowDefinitions="Auto,*">
+        <controls:OfflineBannerView x:Name="OfflineBanner" Grid.Row="0" />
+
+        <Grid Grid.Row="1">
         <AbsoluteLayout x:Name="RootLayout">
 
         <StackLayout AbsoluteLayout.LayoutBounds="0,0,1,1"
@@ -194,6 +197,7 @@
                    VerticalTextAlignment="Center" />
         </Frame>
 
+        </Grid>
     </Grid>
 
 </ContentPage>

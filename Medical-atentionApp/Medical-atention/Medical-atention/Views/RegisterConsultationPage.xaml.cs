@@ -52,6 +52,12 @@ namespace Medical_atention.Views
             }
         }
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            OfflineBanner?.Refresh();
+        }
+
         private void TryInitialize()
         {
             if (_patientId > 0)

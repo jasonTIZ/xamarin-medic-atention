@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Medical_atention.Controls"
              x:Class="Medical_atention.Views.PatientDetailPage"
              BackgroundColor="#F0F4F8"
              Title="Detalle del paciente">
 
-    <Grid RowDefinitions="*,Auto">
-        <ScrollView Grid.Row="0">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <controls:OfflineBannerView x:Name="OfflineBanner" Grid.Row="0" />
+
+        <ScrollView Grid.Row="1">
             <StackLayout Padding="32,32,32,16" Spacing="0">
 
                 <ActivityIndicator IsRunning="{Binding IsLoading}"
@@ -135,7 +138,7 @@
             </StackLayout>
         </ScrollView>
 
-        <StackLayout Grid.Row="1"
+        <StackLayout Grid.Row="2"
                      Padding="32,8,32,24"
                      IsVisible="{Binding IsNotLoading}"
                      Spacing="8">
