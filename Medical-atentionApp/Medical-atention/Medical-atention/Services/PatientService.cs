@@ -1,12 +1,15 @@
 using Medical_atention.Constants;
+using Medical_atention.Data;
 using Medical_atention.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 
 namespace Medical_atention.Services
 {
@@ -64,6 +67,54 @@ namespace Medical_atention.Services
         {
             var response = await _client.SendAsync(BuildRequest(HttpMethod.Delete, $"/api/patients/{id}", token));
             return response.IsSuccessStatusCode;
+        }
+
+        public async Task<PatientHistorySummary> GetPatientHistoryAsync(int patientId, string token)
+        {
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+            {
+                try
+                {
+                    var response = await _client.SendAsync(BuildRequest(HttpMethod.Get, $"/api/patients/{patientId}/history", token));
+                    if (response.IsSuccessStatusCode)
+                        return JsonConvert.DeserializeObject<PatientHistorySummary>(await response.Content.ReadAsStringAsync());
+                }
+                catch { }
+            }
+
+            var local = await LocalDatabase.Instance.GetConsultationsByPatientAsync(patientId);
+            if (!local.Any()) return null;
+
+            return new PatientHistorySummary
+            {
+                PatientId = patientId,
+                TotalConsultations = local.Count,
+                LastConsultationDate = local.First().ConsultationDate.ToString("yyyy-MM-dd"),
+                CurrentPriority = local.First().Priority,
+                RecentDiagnoses = local
+                    .Where(c => !string.IsNullOrWhiteSpace(c.Diagnosis))
+                    .Take(5)
+                    .Select(c => new DiagnosisSummary { Diagnosis = c.Diagnosis, Date = c.ConsultationDate.ToString("yyyy-MM-dd") })
+                    .ToList(),
+                FrequentMedications = ExtractMedications(local.Select(c => c.Treatment)).ToList(),
+                PriorityEvolution = local
+                    .OrderBy(c => c.ConsultationDate)
+                    .Select(c => new PriorityPoint { Date = c.ConsultationDate.ToString("yyyy-MM-dd"), Priority = c.Priority })
+                    .ToList()
+            };
+        }
+
+        private static IEnumerable<string> ExtractMedications(IEnumerable<string> treatments)
+        {
+            var seen = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+            foreach (var treatment in treatments.Where(t => !string.IsNullOrWhiteSpace(t)))
+                foreach (var segment in treatment.Split(new[] { ',', ';', '\n' }, System.StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var entry = segment.Trim();
+                    if (entry.Length >= 4 && entry.Length <= 80)
+                        seen.Add(entry);
+                }
+            return seen.Take(10);
         }
 
         private static HttpRequestMessage BuildRequest(HttpMethod method, string path, string token)

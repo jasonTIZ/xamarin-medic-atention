@@ -100,9 +100,8 @@ namespace Medical_atention.Views
             if (patient is null) return;
 
             var name = Uri.EscapeDataString(patient.FullName);
-            var cedula = Uri.EscapeDataString(patient.IdentificationNumber ?? string.Empty);
             await Shell.Current.GoToAsync(
-                $"{nameof(ConsultationHistoryPage)}?patientId={patient.Id}&patientName={name}&patientCedula={cedula}");
+                $"{nameof(PatientHistoryPage)}?patientId={patient.Id}&patientName={name}");
         }
 
         private async void OnMenuNewConsultation(object sender, EventArgs e)
