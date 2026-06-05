@@ -12,20 +12,21 @@ namespace Medical_atention.Services
 {
     public class AuthService : IAuthService
     {
-        private static readonly HttpClient _client = new HttpClient { Timeout = System.TimeSpan.FromSeconds(10) };
+        private static readonly HttpClient _client = new HttpClient { Timeout = System.TimeSpan.FromSeconds(5) };
 
         public async Task<LoginResponse> LoginAsync(string email, string password)
         {
             var payload = JsonConvert.SerializeObject(new { email, password });
-            var content = new StringContent(payload, Encoding.UTF8, "application/json");
 
             HttpResponseMessage response = null;
+            string successfulUrl = null;
             foreach (var baseUrl in ApiBaseUrlResolver.GetCandidates())
             {
                 try
                 {
+                    var content = new StringContent(payload, Encoding.UTF8, "application/json");
                     response = await _client.PostAsync(baseUrl.TrimEnd('/') + "/api/auth/login", content);
-                    ApiBaseUrlResolver.Remember(baseUrl);
+                    successfulUrl = baseUrl;
                     break;
                 }
                 catch (HttpRequestException)
@@ -40,6 +41,8 @@ namespace Medical_atention.Services
 
             if (response == null)
                 throw new HttpRequestException("No se pudo contactar la API");
+
+            ApiBaseUrlResolver.Remember(successfulUrl);
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
                 return null;

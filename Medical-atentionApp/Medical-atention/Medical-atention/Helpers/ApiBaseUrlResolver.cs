@@ -54,7 +54,7 @@ namespace Medical_atention.Helpers
         {
             try
             {
-                using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) })
+                using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) })
                 {
                     var response = await client.GetAsync(
                         baseUrl + "/api/patients",

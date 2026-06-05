@@ -11,11 +11,13 @@ namespace Medical_atention.Constants
         // Physical device (same Wi‑Fi as laptop) — candidatas en orden de prueba
         public const string ApiBaseUrlPhysical = "http://192.168.100.54:5258";
         public const string ApiBaseUrlPhysicalAlt = "http://192.168.100.12:5258";
+        public const string ApiBaseUrlLocalhost = "http://127.0.0.1:5258";
 
         public static readonly string[] ApiBaseUrlPhysicalCandidates =
         {
+            ApiBaseUrlPhysicalAlt,
             ApiBaseUrlPhysical,
-            ApiBaseUrlPhysicalAlt
+            ApiBaseUrlLocalhost
         };
 
         // iOS Simulator (if applicable)
@@ -33,7 +35,7 @@ namespace Medical_atention.Constants
                 }
 
                 var cached = ApiBaseUrlResolver.CachedUrl;
-                return !string.IsNullOrEmpty(cached) ? cached : ApiBaseUrlPhysical;
+                return !string.IsNullOrEmpty(cached) ? cached : ApiBaseUrlPhysicalAlt;
             }
         }
 
