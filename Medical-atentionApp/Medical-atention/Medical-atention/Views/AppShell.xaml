@@ -20,17 +20,27 @@
         </StackLayout>
     </Shell.FlyoutHeader>
 
-    <ShellContent Title="Pacientes"
-                  ContentTemplate="{DataTemplate views:PatientListPage}"
-                  Route="patients" />
+    <TabBar>
+        <ShellContent Title="Pacientes"
+                      Icon="👥"
+                      ContentTemplate="{DataTemplate views:PatientListPage}"
+                      Route="patients" />
 
-    <ShellContent Title="Triaje"
-                  ContentTemplate="{DataTemplate views:TriagePage}"
-                  Route="triage" />
+        <ShellContent Title="Triaje"
+                      Icon="🏥"
+                      ContentTemplate="{DataTemplate views:TriagePage}"
+                      Route="triage" />
 
-    <ShellContent Title="Perfil"
-                  ContentTemplate="{DataTemplate views:ProfilePage}"
-                  Route="profile" />
+        <ShellContent Title="Consultas"
+                      Icon="📋"
+                      ContentTemplate="{DataTemplate views:ConsultationHistoryPage}"
+                      Route="consultations" />
+
+        <ShellContent Title="Perfil"
+                      Icon="👤"
+                      ContentTemplate="{DataTemplate views:ProfilePage}"
+                      Route="profile" />
+    </TabBar>
 
     <MenuItem Text="Cerrar sesión"
               Clicked="OnLogoutClicked" />
