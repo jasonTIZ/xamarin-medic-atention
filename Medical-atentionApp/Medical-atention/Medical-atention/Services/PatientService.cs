@@ -414,9 +414,10 @@ namespace Medical_atention.Services
         {
             if (!string.IsNullOrEmpty(token))
             {
+                var baseUrl = await ApiBaseUrlResolver.ResolveAsync();
                 var client = new HttpClient
                 {
-                    BaseAddress = new Uri(AppConstants.ApiBaseUrl.TrimEnd('/') + "/"),
+                    BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/"),
                     Timeout = TimeSpan.FromSeconds(15)
                 };
                 client.DefaultRequestHeaders.Authorization =

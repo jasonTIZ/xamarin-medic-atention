@@ -1,4 +1,5 @@
 using Medical_atention.Constants;
+using Medical_atention.Helpers;
 using Medical_atention.Models;
 using Newtonsoft.Json;
 using System.Net;
@@ -18,7 +19,27 @@ namespace Medical_atention.Services
             var payload = JsonConvert.SerializeObject(new { email, password });
             var content = new StringContent(payload, Encoding.UTF8, "application/json");
 
-            var response = await _client.PostAsync(AppConstants.ApiBaseUrl + "/api/auth/login", content);
+            HttpResponseMessage response = null;
+            foreach (var baseUrl in ApiBaseUrlResolver.GetCandidates())
+            {
+                try
+                {
+                    response = await _client.PostAsync(baseUrl.TrimEnd('/') + "/api/auth/login", content);
+                    ApiBaseUrlResolver.Remember(baseUrl);
+                    break;
+                }
+                catch (HttpRequestException)
+                {
+                    response = null;
+                }
+                catch (System.Threading.Tasks.TaskCanceledException)
+                {
+                    response = null;
+                }
+            }
+
+            if (response == null)
+                throw new HttpRequestException("No se pudo contactar la API");
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
                 return null;
@@ -34,7 +55,8 @@ namespace Medical_atention.Services
             var payload = JsonConvert.SerializeObject(new { currentPassword, newPassword });
             var content = new StringContent(payload, Encoding.UTF8, "application/json");
 
-            var request = new HttpRequestMessage(HttpMethod.Put, AppConstants.ApiBaseUrl + "/api/auth/password")
+            var baseUrl = await ApiBaseUrlResolver.ResolveAsync();
+            var request = new HttpRequestMessage(HttpMethod.Put, baseUrl + "/api/auth/password")
             {
                 Content = content
             };

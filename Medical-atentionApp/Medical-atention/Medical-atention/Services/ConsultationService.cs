@@ -37,7 +37,7 @@ namespace Medical_atention.Services
             {
                 try
                 {
-                    var message = BuildRequest(HttpMethod.Post, "/api/consultations", token);
+                    var message = await BuildRequestAsync(HttpMethod.Post, "/api/consultations", token);
                     message.Content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
                     var response = await _client.SendAsync(message);
 
@@ -139,7 +139,7 @@ namespace Medical_atention.Services
                     var fromStr = from.ToString("yyyy-MM-dd");
                     var toStr = to.ToString("yyyy-MM-dd");
                     var path = $"/api/consultations?patient_id={patientId}&from={fromStr}&to={toStr}";
-                    var response = await _client.SendAsync(BuildRequest(HttpMethod.Get, path, token));
+                    var response = await _client.SendAsync(await BuildRequestAsync(HttpMethod.Get, path, token));
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -169,7 +169,7 @@ namespace Medical_atention.Services
             {
                 try
                 {
-                    var message = BuildRequest(HttpMethod.Put, $"/api/consultations/{serverId.Value}", token);
+                    var message = await BuildRequestAsync(HttpMethod.Put, $"/api/consultations/{serverId.Value}", token);
                     message.Content = new StringContent(
                         JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
 
@@ -203,7 +203,7 @@ namespace Medical_atention.Services
                 try
                 {
                     var response = await _client.SendAsync(
-                        BuildRequest(HttpMethod.Get, $"/api/consultations/{serverId.Value}", token));
+                        await BuildRequestAsync(HttpMethod.Get, $"/api/consultations/{serverId.Value}", token));
 
                     if (response.IsSuccessStatusCode)
                         return JsonConvert.DeserializeObject<ConsultationResponseDto>(
@@ -277,9 +277,10 @@ namespace Medical_atention.Services
             };
         }
 
-        private static HttpRequestMessage BuildRequest(HttpMethod method, string path, string token)
+        private static async Task<HttpRequestMessage> BuildRequestAsync(HttpMethod method, string path, string token)
         {
-            var request = new HttpRequestMessage(method, AppConstants.ApiBaseUrl + path);
+            var baseUrl = await ApiBaseUrlResolver.ResolveAsync();
+            var request = new HttpRequestMessage(method, baseUrl + path);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             return request;
         }
