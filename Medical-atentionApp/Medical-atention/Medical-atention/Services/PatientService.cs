@@ -188,6 +188,57 @@ namespace Medical_atention.Services
             }
         }
 
+        public async Task<PatientHistorySummary> GetPatientHistoryAsync(int patientId, string token)
+        {
+            if (IsOnline())
+            {
+                try
+                {
+                    using (var client = await CreateClientAsync(token))
+                    {
+                        var response = await client.GetAsync($"api/patients/{patientId}/history");
+                        if (response.IsSuccessStatusCode)
+                            return JsonConvert.DeserializeObject<PatientHistorySummary>(await response.Content.ReadAsStringAsync());
+                    }
+                }
+                catch { }
+            }
+
+            var local = await LocalDatabase.Instance.GetConsultationsByPatientAsync(patientId);
+            if (!local.Any()) return null;
+
+            return new PatientHistorySummary
+            {
+                PatientId = patientId,
+                TotalConsultations = local.Count,
+                LastConsultationDate = local.First().ConsultationDate.ToString("yyyy-MM-dd"),
+                CurrentPriority = local.First().Priority,
+                RecentDiagnoses = local
+                    .Where(c => !string.IsNullOrWhiteSpace(c.Diagnosis))
+                    .Take(5)
+                    .Select(c => new DiagnosisSummary { Diagnosis = c.Diagnosis, Date = c.ConsultationDate.ToString("yyyy-MM-dd") })
+                    .ToList(),
+                FrequentMedications = ExtractMedications(local.Select(c => c.Treatment)).ToList(),
+                PriorityEvolution = local
+                    .OrderBy(c => c.ConsultationDate)
+                    .Select(c => new PriorityPoint { Date = c.ConsultationDate.ToString("yyyy-MM-dd"), Priority = c.Priority })
+                    .ToList()
+            };
+        }
+
+        private static IEnumerable<string> ExtractMedications(IEnumerable<string> treatments)
+        {
+            var seen = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+            foreach (var treatment in treatments.Where(t => !string.IsNullOrWhiteSpace(t)))
+                foreach (var segment in treatment.Split(new[] { ',', ';', '\n' }, System.StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var entry = segment.Trim();
+                    if (entry.Length >= 4 && entry.Length <= 80)
+                        seen.Add(entry);
+                }
+            return seen.Take(10);
+        }
+
         // ── Triaje / offline ──────────────────────────────────────────────────
 
         public async Task<IReadOnlyList<Patient>> LoadPatientsFromLocalAsync()

@@ -12,6 +12,7 @@ namespace Medical_atention.Services
         Task<List<PatientResponseDto>> GetAllPatientsAsync(string token);
         Task<(PatientResponseDto patient, string error)> UpdateAsync(int id, PatientRequestDto request, string token);
         Task<bool> DeleteAsync(int id, string token);
+        Task<PatientHistorySummary> GetPatientHistoryAsync(int patientId, string token);
 
         // Triaje / offline
         bool IsOnline();
