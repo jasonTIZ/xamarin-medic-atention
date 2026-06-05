@@ -23,7 +23,19 @@ namespace Medical_atention.Models
         public string Priority { get; set; }
         public DateTime? LastConsultationDate { get; set; }
 
+        public bool HasPriority => !string.IsNullOrWhiteSpace(Priority);
+
         public string FullName => $"{Name} {LastName}".Trim();
+
+        public string Initials
+        {
+            get
+            {
+                var a = string.IsNullOrWhiteSpace(Name) ? '?' : char.ToUpper(Name.Trim()[0]);
+                var b = string.IsNullOrWhiteSpace(LastName) ? '?' : char.ToUpper(LastName.Trim()[0]);
+                return $"{a}{b}";
+            }
+        }
     }
 
     public class UpdatePatientPriorityRequest
