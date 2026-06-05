@@ -24,29 +24,36 @@ namespace Medical_atention.Services
         public bool IsOnline() =>
             Connectivity.NetworkAccess == NetworkAccess.Internet;
 
+        public async Task<IReadOnlyList<Patient>> LoadPatientsFromLocalAsync()
+        {
+            var entities = await _repository.GetAllAsync();
+            return entities.Select(PatientMapper.ToDomain).ToList();
+        }
+
         public async Task<IReadOnlyList<Patient>> LoadPatientsAsync(bool forceRefresh = false)
         {
-            if (IsOnline())
+            if (!IsOnline())
+                return await LoadPatientsFromLocalAsync();
+
+            try
             {
-                try
+                await _syncService.SyncPendingAsync();
+                var remote = await FetchPatientsFromApiAsync("api/patients");
+                if (remote.Count > 0)
                 {
-                    await _syncService.SyncPendingAsync();
-                    var remote = await FetchPatientsFromApiAsync("api/patients");
-                    if (remote.Count > 0)
-                    {
-                        await _repository.ReplaceAllAsync(remote.Select(PatientMapper.ToEntity));
-                        return remote;
-                    }
-                }
-                catch (Exception)
-                {
-                    if (!forceRefresh)
-                        return (await _repository.GetAllAsync()).Select(PatientMapper.ToDomain).ToList();
-                    throw;
+                    await _repository.ReplaceAllAsync(remote.Select(PatientMapper.ToEntity));
+                    LocalDataChangedHelper.NotifyPatientsChanged();
+                    return remote;
                 }
             }
+            catch (Exception)
+            {
+                if (!forceRefresh)
+                    return await LoadPatientsFromLocalAsync();
+                throw;
+            }
 
-            return (await _repository.GetAllAsync()).Select(PatientMapper.ToDomain).ToList();
+            return await LoadPatientsFromLocalAsync();
         }
 
         public async Task<Patient> GetPatientAsync(int id)
@@ -174,6 +181,7 @@ namespace Medical_atention.Services
                             var entity = PatientMapper.ToEntity(MapToPatient(dto));
                             entity.LocalId = patientEntity.LocalId;
                             await _repository.UpsertAsync(entity);
+                            LocalDataChangedHelper.NotifyPatientsChanged();
                             return (true, null);
                         }
 
@@ -197,6 +205,7 @@ namespace Medical_atention.Services
                 PayloadJson = JsonConvert.SerializeObject(new UpdatePatientPriorityRequest { Priority = priority })
             });
 
+            LocalDataChangedHelper.NotifyPatientsChanged();
             return (true, null);
         }
 

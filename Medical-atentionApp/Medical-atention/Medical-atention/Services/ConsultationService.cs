@@ -61,6 +61,7 @@ namespace Medical_atention.Services
                             patient.LastConsultationAt = dto.ConsultationDate;
                             await _consultationRepository.InsertAsync(consultation);
                             await _patientRepository.UpsertAsync(patient);
+                            LocalDataChangedHelper.NotifyPatientsChanged();
                             return (true, null);
                         }
                     }
@@ -88,6 +89,7 @@ namespace Medical_atention.Services
                 })
             });
 
+            LocalDataChangedHelper.NotifyPatientsChanged();
             return (true, "Consulta guardada localmente; se sincronizará al reconectar");
         }
     }

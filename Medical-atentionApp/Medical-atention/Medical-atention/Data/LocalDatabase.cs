@@ -3,6 +3,7 @@ using SQLite;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Medical_atention.Data
@@ -33,7 +34,7 @@ namespace Medical_atention.Data
             if (_initialized) return;
 
             await Connection.CreateTableAsync<PatientEntity>();
-            await Connection.CreateTableAsync<ConsultationEntity>();
+            await EnsureConsultationsSchemaAsync();
             await Connection.CreateTableAsync<SyncQueueEntity>();
             await EnsurePatientColumnsAsync();
 
@@ -67,9 +68,33 @@ namespace Medical_atention.Data
             return columns;
         }
 
+        private static async Task EnsureConsultationsSchemaAsync()
+        {
+            var rows = await Connection.QueryAsync<SqliteMasterSqlRow>(
+                "SELECT sql FROM sqlite_master WHERE type='table' AND name='consultations'");
+            var tableSql = rows.FirstOrDefault()?.sql;
+
+            if (string.IsNullOrEmpty(tableSql))
+            {
+                await Connection.CreateTableAsync<ConsultationEntity>();
+                return;
+            }
+
+            if (tableSql.IndexOf("AUTOINCREMENT", StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                await Connection.ExecuteAsync("DROP TABLE IF EXISTS consultations");
+                await Connection.CreateTableAsync<ConsultationEntity>();
+            }
+        }
+
         private class TableInfoRow
         {
             public string name { get; set; }
+        }
+
+        private class SqliteMasterSqlRow
+        {
+            public string sql { get; set; }
         }
     }
 }

@@ -1,3 +1,4 @@
+using Medical_atention.Helpers;
 using Medical_atention.Models;
 using Medical_atention.Services;
 using System;
@@ -22,7 +23,6 @@ namespace Medical_atention.ViewModels
         private bool _isLoading;
         private bool _isRefreshing;
         private bool _isOffline;
-        private bool _hasLoaded;
 
         public PatientListViewModel() : this(new PatientService()) { }
 
@@ -32,6 +32,10 @@ namespace Medical_atention.ViewModels
             RefreshCommand = new Command(async () => await RefreshAsync());
             PatientSelectedCommand = new Command<Patient>(async p => await OnPatientSelectedAsync(p));
             Connectivity.ConnectivityChanged += OnConnectivityChanged;
+            MessagingCenter.Subscribe<object>(
+                this, LocalDataChangedHelper.PatientsChangedMessage, _ => ReloadFromLocalOnMainThread());
+            MessagingCenter.Subscribe<object, int>(
+                this, SyncNotificationHelper.SyncCompletedMessage, (_, __) => ReloadFromLocalOnMainThread());
             UpdateOfflineState();
         }
 
@@ -79,11 +83,10 @@ namespace Medical_atention.ViewModels
         public ICommand RefreshCommand { get; }
         public ICommand PatientSelectedCommand { get; }
 
-        public async Task InitializeAsync()
+        public async Task OnAppearingAsync()
         {
-            if (_hasLoaded) return;
-            await LoadAsync(forceRefresh: false);
-            _hasLoaded = true;
+            UpdateOfflineState();
+            await LoadAsync(forceRefresh: _patientService.IsOnline());
         }
 
         public async Task RefreshAsync()
@@ -91,7 +94,7 @@ namespace Medical_atention.ViewModels
             IsRefreshing = true;
             try
             {
-                await LoadAsync(forceRefresh: true);
+                await LoadAsync(forceRefresh: _patientService.IsOnline());
             }
             finally
             {
@@ -105,13 +108,18 @@ namespace Medical_atention.ViewModels
             UpdateOfflineState();
             try
             {
-                var patients = await _patientService.LoadPatientsAsync(forceRefresh);
+                IReadOnlyList<Patient> patients;
+                if (!_patientService.IsOnline())
+                    patients = await _patientService.LoadPatientsFromLocalAsync();
+                else
+                    patients = await _patientService.LoadPatientsAsync(forceRefresh);
+
                 _allPatients = patients.ToList();
                 ApplyFilter();
             }
             catch (Exception)
             {
-                _allPatients = (await _patientService.LoadPatientsAsync(forceRefresh: false)).ToList();
+                _allPatients = (await _patientService.LoadPatientsFromLocalAsync()).ToList();
                 ApplyFilter();
             }
             finally
@@ -121,19 +129,32 @@ namespace Medical_atention.ViewModels
             }
         }
 
+        private void ReloadFromLocalOnMainThread()
+        {
+            Device.BeginInvokeOnMainThread(async () =>
+            {
+                if (IsLoading || IsRefreshing) return;
+                _allPatients = (await _patientService.LoadPatientsFromLocalAsync()).ToList();
+                ApplyFilter();
+            });
+        }
+
         private void ApplyFilter()
         {
             var query = SanitizeSearchInput(_searchText);
-            if (string.IsNullOrEmpty(query))
-            {
-                ReplaceFilteredList(_allPatients);
-                return;
-            }
+            var filtered = string.IsNullOrEmpty(query)
+                ? _allPatients
+                : FilterByQuery(_allPatients, query);
 
+            ReplaceFilteredList(filtered);
+        }
+
+        private static List<Patient> FilterByQuery(List<Patient> source, string query)
+        {
             var queryLower = query.ToLowerInvariant();
             var queryNormalized = NormalizeForComparison(query);
 
-            var filtered = _allPatients.Where(p =>
+            return source.Where(p =>
             {
                 var fullName = p.FullName ?? string.Empty;
                 var nameMatch = fullName.ToLowerInvariant().Contains(queryLower)
@@ -145,38 +166,18 @@ namespace Medical_atention.ViewModels
 
                 return nameMatch || documentMatch;
             }).ToList();
-
-            ReplaceFilteredList(filtered);
-        }
-
-        private void ReplaceFilteredList(List<Patient> filtered)
-        {
-
-            for (var i = _filteredPatients.Count - 1; i >= 0; i--)
-            {
-                if (!filtered.Any(f => f.Id == _filteredPatients[i].Id))
-                    _filteredPatients.RemoveAt(i);
-            }
-
-            foreach (var patient in filtered)
-            {
-                if (!_filteredPatients.Any(p => p.Id == patient.Id))
-                    _filteredPatients.Add(patient);
-            }
-
-            for (var i = 0; i < filtered.Count; i++)
-            {
-                var item = _filteredPatients.FirstOrDefault(p => p.Id == filtered[i].Id);
-                if (item == null) continue;
-                var currentIndex = _filteredPatients.IndexOf(item);
-                if (currentIndex >= 0 && currentIndex != i)
-                    _filteredPatients.Move(currentIndex, i);
-            }
         }
 
         /// <summary>
-        /// Trim and collapse extra spaces in the search box text.
+        /// Reemplaza la colección visible para que badges y prioridad se actualicen en la UI.
         /// </summary>
+        private void ReplaceFilteredList(List<Patient> filtered)
+        {
+            _filteredPatients.Clear();
+            foreach (var patient in filtered)
+                _filteredPatients.Add(patient);
+        }
+
         private static string SanitizeSearchInput(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -186,9 +187,6 @@ namespace Medical_atention.ViewModels
             return string.Join(" ", parts);
         }
 
-        /// <summary>
-        /// Remove spaces, dashes and symbols so cédula "1-2345-6789" matches "123456789" or "2345".
-        /// </summary>
         private static string NormalizeForComparison(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -205,7 +203,16 @@ namespace Medical_atention.ViewModels
         }
 
         private void OnConnectivityChanged(object sender, ConnectivityChangedEventArgs e)
-            => Device.BeginInvokeOnMainThread(UpdateOfflineState);
+        {
+            Device.BeginInvokeOnMainThread(async () =>
+            {
+                UpdateOfflineState();
+                if (e.NetworkAccess == NetworkAccess.Internet)
+                    await LoadAsync(forceRefresh: true);
+                else
+                    ReloadFromLocalOnMainThread();
+            });
+        }
 
         private void UpdateOfflineState()
             => IsOffline = !_patientService.IsOnline();

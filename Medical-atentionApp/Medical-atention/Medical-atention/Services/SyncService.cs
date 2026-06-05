@@ -45,7 +45,10 @@ namespace Medical_atention.Services
             }
 
             if (synced > 0)
+            {
+                LocalDataChangedHelper.NotifyPatientsChanged();
                 SyncNotificationHelper.NotifyCompleted(synced);
+            }
 
             return synced;
         }

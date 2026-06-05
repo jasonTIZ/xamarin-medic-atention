@@ -18,7 +18,7 @@ namespace Medical_atention.Views
         {
             base.OnAppearing();
             if (BindingContext is PatientListViewModel vm)
-                await vm.InitializeAsync();
+                await vm.OnAppearingAsync();
         }
 
         private async void OnPatientSelected(object sender, SelectionChangedEventArgs e)

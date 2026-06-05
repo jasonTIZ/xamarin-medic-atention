@@ -6,7 +6,7 @@ namespace Medical_atention.Models.Entities
     [Table("consultations")]
     public class ConsultationEntity
     {
-        [PrimaryKey]
+        [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
 
         public Guid LocalId { get; set; } = Guid.NewGuid();

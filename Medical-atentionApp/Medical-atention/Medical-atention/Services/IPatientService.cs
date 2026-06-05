@@ -10,6 +10,7 @@ namespace Medical_atention.Services
 
         // ── Listado y detalle ──────────────────────────────────────────────────
         Task<IReadOnlyList<Patient>> LoadPatientsAsync(bool forceRefresh = false);
+        Task<IReadOnlyList<Patient>> LoadPatientsFromLocalAsync();
         Task<Patient> GetPatientAsync(int id);
 
         // ── Registro ──────────────────────────────────────────────────────────
