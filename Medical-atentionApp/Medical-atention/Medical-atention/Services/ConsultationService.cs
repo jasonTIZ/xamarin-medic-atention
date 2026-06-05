@@ -1,5 +1,6 @@
 using Medical_atention.Constants;
 using Medical_atention.Data;
+using Medical_atention.Helpers;
 using Medical_atention.Models;
 using Newtonsoft.Json;
 using System;
@@ -18,12 +19,14 @@ namespace Medical_atention.Services
     {
         private static readonly HttpClient _client = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
         private readonly LocalDatabase _localDb;
+        private readonly IPatientRepository _patientRepository;
 
-        public ConsultationService() : this(LocalDatabase.Instance) { }
+        public ConsultationService() : this(LocalDatabase.Instance, new PatientRepository()) { }
 
-        public ConsultationService(LocalDatabase localDb)
+        public ConsultationService(LocalDatabase localDb, IPatientRepository patientRepository)
         {
             _localDb = localDb;
+            _patientRepository = patientRepository;
         }
 
         public async Task<RegisterConsultationResult> RegisterAsync(ConsultationRequestDto request, string token)
@@ -44,6 +47,10 @@ namespace Medical_atention.Services
                             await response.Content.ReadAsStringAsync());
 
                         await _localDb.SaveConsultationAsync(ToLocal(consultation, pendingSync: false));
+                        await ApplyConsultationPriorityToPatientAsync(
+                            consultation.PatientId,
+                            consultation.ConsultationDate,
+                            consultation.Priority);
                         return new RegisterConsultationResult
                         {
                             Success = true,
@@ -59,11 +66,33 @@ namespace Medical_atention.Services
             }
 
             await _localDb.SaveConsultationAsync(ToLocal(request, pendingSync: true));
+            await ApplyConsultationPriorityToPatientAsync(
+                request.PatientId,
+                request.ConsultationDate,
+                request.Priority);
             return new RegisterConsultationResult
             {
                 Success = true,
                 SavedOffline = true
             };
+        }
+
+        private async Task ApplyConsultationPriorityToPatientAsync(
+            int patientId, DateTime consultationDate, string priority)
+        {
+            var patient = await _patientRepository.GetByIdAsync(patientId);
+            if (patient == null) return;
+
+            if (patient.LastConsultationAt.HasValue
+                && patient.LastConsultationAt.Value > consultationDate)
+                return;
+
+            patient.Priority = PatientMapper.ParsePriority(priority);
+            patient.LastConsultationAt = consultationDate;
+            patient.PendingPrioritySync = false;
+            patient.PendingPriority = null;
+            await _patientRepository.UpsertAsync(patient);
+            LocalDataChangedHelper.NotifyPatientsChanged();
         }
 
         private static LocalConsultation ToLocal(ConsultationResponseDto dto, bool pendingSync)

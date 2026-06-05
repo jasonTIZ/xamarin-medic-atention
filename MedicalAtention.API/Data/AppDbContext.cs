@@ -11,6 +11,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Consultation>()
+            .HasOne(c => c.Patient)
+            .WithMany()
+            .HasForeignKey(c => c.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();

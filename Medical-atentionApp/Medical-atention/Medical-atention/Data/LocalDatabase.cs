@@ -1,3 +1,4 @@
+using Medical_atention.Models.Entities;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -12,19 +13,39 @@ namespace Medical_atention.Data
         private static readonly Lazy<LocalDatabase> _instance = new Lazy<LocalDatabase>(() => new LocalDatabase());
         private SQLiteAsyncConnection _connection;
         private readonly Task _initTask;
+        private bool _initialized;
 
         private LocalDatabase()
         {
-            _initTask = InitializeAsync();
+            _initTask = InitializeDatabaseAsync();
         }
 
         public static LocalDatabase Instance => _instance.Value;
 
-        private async Task InitializeAsync()
+        public static SQLiteAsyncConnection Connection => Instance._connection;
+
+        public static async Task InitializeAsync()
         {
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "medical_atention.db3");
+            await Instance._initTask;
+        }
+
+        private async Task InitializeDatabaseAsync()
+        {
+            if (_initialized) return;
+
+            var path = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "medical_atention.db3");
+
             _connection = new SQLiteAsyncConnection(path);
+
             await _connection.CreateTableAsync<LocalConsultation>();
+            await _connection.CreateTableAsync<PatientEntity>();
+            await _connection.CreateTableAsync<SyncQueueEntity>();
+            await EnsurePatientColumnsAsync();
+            await EnsureConsultationsSchemaAsync();
+
+            _initialized = true;
         }
 
         private async Task<SQLiteAsyncConnection> GetConnectionAsync()
@@ -32,6 +53,8 @@ namespace Medical_atention.Data
             await _initTask;
             return _connection;
         }
+
+        // ── Consultas locales (dev) ───────────────────────────────────────────
 
         public async Task<int> SaveConsultationAsync(LocalConsultation consultation)
         {
@@ -88,7 +111,7 @@ namespace Medical_atention.Data
             return true;
         }
 
-        public async Task<System.Collections.Generic.Dictionary<int, (string Priority, DateTime ConsultationDate)>> GetLatestPrioritiesByPatientAsync()
+        public async Task<Dictionary<int, (string Priority, DateTime ConsultationDate)>> GetLatestPrioritiesByPatientAsync()
         {
             var db = await GetConnectionAsync();
             var all = await db.Table<LocalConsultation>().ToListAsync();
@@ -101,6 +124,59 @@ namespace Medical_atention.Data
                         var latest = g.OrderByDescending(c => c.ConsultationDate).First();
                         return (latest.Priority, latest.ConsultationDate);
                     });
+        }
+
+        // ── Migraciones ───────────────────────────────────────────────────────
+
+        private async Task EnsurePatientColumnsAsync()
+        {
+            var columns = await GetColumnNamesAsync("patients");
+            var alters = new List<string>();
+
+            if (!columns.Contains("LocalId"))
+                alters.Add("ALTER TABLE patients ADD COLUMN LocalId TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'");
+            if (!columns.Contains("pending_sync"))
+                alters.Add("ALTER TABLE patients ADD COLUMN pending_sync INTEGER NOT NULL DEFAULT 0");
+            if (!columns.Contains("DateOfBirth"))
+                alters.Add("ALTER TABLE patients ADD COLUMN DateOfBirth TEXT NOT NULL DEFAULT '0001-01-01'");
+            if (!columns.Contains("Gender"))
+                alters.Add("ALTER TABLE patients ADD COLUMN Gender TEXT NOT NULL DEFAULT ''");
+
+            foreach (var sql in alters)
+                await _connection.ExecuteAsync(sql);
+        }
+
+        private async Task EnsureConsultationsSchemaAsync()
+        {
+            var rows = await _connection.QueryAsync<SqliteMasterSqlRow>(
+                "SELECT sql FROM sqlite_master WHERE type='table' AND name='LocalConsultation'");
+            var tableSql = rows.FirstOrDefault()?.sql;
+
+            if (!string.IsNullOrEmpty(tableSql) &&
+                tableSql.IndexOf("AUTOINCREMENT", StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                await _connection.ExecuteAsync("DROP TABLE IF EXISTS LocalConsultation");
+                await _connection.CreateTableAsync<LocalConsultation>();
+            }
+        }
+
+        private async Task<HashSet<string>> GetColumnNamesAsync(string table)
+        {
+            var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var rows = await _connection.QueryAsync<TableInfoRow>($"PRAGMA table_info({table})");
+            foreach (var row in rows)
+                columns.Add(row.name);
+            return columns;
+        }
+
+        private class TableInfoRow
+        {
+            public string name { get; set; }
+        }
+
+        private class SqliteMasterSqlRow
+        {
+            public string sql { get; set; }
         }
     }
 }

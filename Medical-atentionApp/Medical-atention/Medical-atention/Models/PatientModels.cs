@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace Medical_atention.Models
 {
@@ -37,5 +36,15 @@ namespace Medical_atention.Models
                 return $"{a}{b}";
             }
         }
+    }
+
+    public class UpdatePatientPriorityRequest
+    {
+        public PriorityLevel Priority { get; set; }
+    }
+
+    public class DeletePatientSyncPayload
+    {
+        public int PatientId { get; set; }
     }
 }
