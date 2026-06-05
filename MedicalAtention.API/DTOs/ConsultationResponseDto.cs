@@ -8,4 +8,5 @@ public record ConsultationResponseDto(
     string Diagnosis,
     string Treatment,
     string Notes,
+    string Priority,
     DateTime CreatedAt);

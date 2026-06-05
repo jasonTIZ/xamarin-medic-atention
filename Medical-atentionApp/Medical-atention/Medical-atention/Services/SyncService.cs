@@ -17,7 +17,6 @@ namespace Medical_atention.Services
         private static readonly HttpMethod PatchMethod = new HttpMethod("PATCH");
         private readonly ISyncQueueRepository _queueRepository = new SyncQueueRepository();
         private readonly IPatientRepository _patientRepository = new PatientRepository();
-        private readonly IConsultationRepository _consultationRepository = new ConsultationRepository();
 
         public async Task<int> SyncPendingAsync()
         {
@@ -61,8 +60,6 @@ namespace Medical_atention.Services
                     return await SyncPatientPriorityAsync(item);
                 case SyncOperation.CreatePatient:
                     return await SyncCreatePatientAsync(item);
-                case SyncOperation.CreateConsultation:
-                    return await SyncCreateConsultationAsync(item);
                 default:
                     Debug.WriteLine($"[SyncService] Operación desconocida: {item.Operation}");
                     return false;
@@ -88,7 +85,7 @@ namespace Medical_atention.Services
 
                 var json = await response.Content.ReadAsStringAsync();
                 var dto = JsonConvert.DeserializeObject<PatientResponseDto>(json);
-                var entity = PatientMapper.ToEntity(MapToPatient(dto));
+                var entity = PatientMapper.FromDtoToEntity(dto);
                 entity.LocalId = patient.LocalId;
                 entity.PendingSync = false;
                 entity.PendingPrioritySync = false;
@@ -113,7 +110,7 @@ namespace Medical_atention.Services
 
                 var json = await response.Content.ReadAsStringAsync();
                 var dto = JsonConvert.DeserializeObject<PatientResponseDto>(json);
-                var entity = PatientMapper.ToEntity(MapToPatient(dto));
+                var entity = PatientMapper.FromDtoToEntity(dto);
                 entity.LocalId = local.LocalId;
                 entity.PendingSync = false;
                 entity.PendingPrioritySync = false;
@@ -121,59 +118,5 @@ namespace Medical_atention.Services
                 return true;
             }
         }
-
-        private async Task<bool> SyncCreateConsultationAsync(SyncQueueEntity item)
-        {
-            var request = JsonConvert.DeserializeObject<ConsultationRequestDto>(item.PayloadJson);
-            var local = await _consultationRepository.GetByLocalIdAsync(item.EntityLocalId);
-            if (local == null) return false;
-
-            if (local.PatientId <= 0)
-            {
-                var patient = await _patientRepository.GetByLocalIdAsync(local.PatientLocalId);
-                if (patient == null || patient.Id <= 0) return false;
-                request.PatientId = patient.Id;
-            }
-
-            using (var client = await ApiClient.CreateAsync())
-            {
-                var content = new StringContent(
-                    JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
-                var response = await client.PostAsync("api/consultations", content);
-                if (!response.IsSuccessStatusCode) return false;
-
-                var json = await response.Content.ReadAsStringAsync();
-                var dto = JsonConvert.DeserializeObject<ConsultationResponseDto>(json);
-
-                local.Id = dto.Id;
-                local.PatientId = dto.PatientId;
-                local.PendingSync = false;
-                await _consultationRepository.UpdateAsync(local);
-
-                var patientEntity = await _patientRepository.GetByIdAsync(dto.PatientId);
-                if (patientEntity != null)
-                {
-                    patientEntity.LastConsultationAt = dto.ConsultationDate;
-                    await _patientRepository.UpsertAsync(patientEntity);
-                }
-
-                return true;
-            }
-        }
-
-        private static Patient MapToPatient(PatientResponseDto dto) =>
-            new Patient
-            {
-                Id = dto.Id,
-                FirstName = dto.Name ?? string.Empty,
-                LastName = dto.LastName ?? string.Empty,
-                DocumentNumber = dto.IdentificationNumber ?? string.Empty,
-                DateOfBirth = dto.DateOfBirth,
-                Gender = dto.Gender ?? string.Empty,
-                Priority = (int)dto.Priority,
-                LastConsultationAt = dto.LastConsultationAt,
-                PendingSync = false,
-                PendingPrioritySync = false
-            };
     }
 }

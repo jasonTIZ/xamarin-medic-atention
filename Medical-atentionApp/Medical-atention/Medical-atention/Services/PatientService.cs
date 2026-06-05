@@ -1,3 +1,4 @@
+using Medical_atention.Constants;
 using Medical_atention.Data;
 using Medical_atention.Helpers;
 using Medical_atention.Models;
@@ -23,6 +24,127 @@ namespace Medical_atention.Services
 
         public bool IsOnline() =>
             Connectivity.NetworkAccess == NetworkAccess.Internet;
+
+        // ── CRUD con token (detalle paciente — dev) ─────────────────────────────
+
+        public async Task<(PatientResponseDto patient, string error)> RegisterAsync(
+            PatientRequestDto request, string token)
+        {
+            try
+            {
+                using (var client = await CreateClientAsync(token))
+                {
+                    var content = new StringContent(
+                        JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+                    var response = await client.PostAsync("api/patients", content);
+
+                    if (response.StatusCode == HttpStatusCode.Conflict)
+                        return (null, "Ya existe un paciente con esta cédula");
+
+                    if (!response.IsSuccessStatusCode)
+                        return (null, "Error al registrar el paciente");
+
+                    var dto = JsonConvert.DeserializeObject<PatientResponseDto>(
+                        await response.Content.ReadAsStringAsync());
+                    await _repository.UpsertAsync(PatientMapper.FromDtoToEntity(dto));
+                    return (dto, null);
+                }
+            }
+            catch (Exception)
+            {
+                return (null, "Sin conexión, verifica tu red");
+            }
+        }
+
+        public async Task<PatientResponseDto> GetPatientAsync(int id, string token)
+        {
+            try
+            {
+                using (var client = await CreateClientAsync(token))
+                {
+                    var response = await client.GetAsync($"api/patients/{id}");
+                    if (!response.IsSuccessStatusCode) return null;
+                    return JsonConvert.DeserializeObject<PatientResponseDto>(
+                        await response.Content.ReadAsStringAsync());
+                }
+            }
+            catch (Exception)
+            {
+                var local = await _repository.GetByIdAsync(id);
+                return local == null ? null : MapEntityToDto(local);
+            }
+        }
+
+        public async Task<List<PatientResponseDto>> GetAllPatientsAsync(string token)
+        {
+            try
+            {
+                using (var client = await CreateClientAsync(token))
+                {
+                    var response = await client.GetAsync("api/patients");
+                    if (!response.IsSuccessStatusCode) return new List<PatientResponseDto>();
+                    return JsonConvert.DeserializeObject<List<PatientResponseDto>>(
+                               await response.Content.ReadAsStringAsync())
+                           ?? new List<PatientResponseDto>();
+                }
+            }
+            catch (Exception)
+            {
+                return (await _repository.GetAllAsync())
+                    .Select(MapEntityToDto)
+                    .ToList();
+            }
+        }
+
+        public async Task<(PatientResponseDto patient, string error)> UpdateAsync(
+            int id, PatientRequestDto request, string token)
+        {
+            try
+            {
+                using (var client = await CreateClientAsync(token))
+                {
+                    var content = new StringContent(
+                        JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+                    var response = await client.PutAsync($"api/patients/{id}", content);
+
+                    if (response.StatusCode == HttpStatusCode.Conflict)
+                        return (null, "Ya existe un paciente con esta cédula");
+
+                    if (!response.IsSuccessStatusCode)
+                        return (null, "Error al guardar los cambios");
+
+                    var dto = JsonConvert.DeserializeObject<PatientResponseDto>(
+                        await response.Content.ReadAsStringAsync());
+                    await _repository.UpsertAsync(PatientMapper.FromDtoToEntity(dto));
+                    LocalDataChangedHelper.NotifyPatientsChanged();
+                    return (dto, null);
+                }
+            }
+            catch (Exception)
+            {
+                return (null, "Sin conexión, verifica tu red");
+            }
+        }
+
+        public async Task<bool> DeleteAsync(int id, string token)
+        {
+            try
+            {
+                using (var client = await CreateClientAsync(token))
+                {
+                    var response = await client.DeleteAsync($"api/patients/{id}");
+                    if (response.IsSuccessStatusCode)
+                        await _repository.DeleteAsync(id);
+                    return response.IsSuccessStatusCode;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        // ── Triaje / offline ──────────────────────────────────────────────────
 
         public async Task<IReadOnlyList<Patient>> LoadPatientsFromLocalAsync()
         {
@@ -56,44 +178,16 @@ namespace Medical_atention.Services
             return await LoadPatientsFromLocalAsync();
         }
 
-        public async Task<Patient> GetPatientAsync(int id)
+        public async Task<(Patient patient, string error)> RegisterLocalAsync(PatientRequestDto request)
         {
-            var local = await _repository.GetByIdAsync(id);
-            if (local != null) return PatientMapper.ToDomain(local);
-
-            var all = await LoadPatientsAsync();
-            return all.FirstOrDefault(p => p.Id == id);
-        }
-
-        public async Task<(Patient patient, string error)> RegisterAsync(PatientRequestDto request)
-        {
-            if (IsOnline())
+            var token = await SecureStorage.GetAsync(AppConstants.TokenKey);
+            if (IsOnline() && !string.IsNullOrEmpty(token))
             {
-                try
-                {
-                    using (var client = await ApiClient.CreateAsync())
-                    {
-                        var content = new StringContent(
-                            JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
-                        var response = await client.PostAsync("api/patients", content);
-
-                        if (response.StatusCode == HttpStatusCode.Conflict)
-                            return (null, "Ya existe un paciente con esta cédula");
-
-                        if (!response.IsSuccessStatusCode)
-                            return (null, "Error al registrar el paciente");
-
-                        var dto = JsonConvert.DeserializeObject<PatientResponseDto>(
-                            await response.Content.ReadAsStringAsync());
-                        var patient = MapToPatient(dto);
-                        await _repository.UpsertAsync(PatientMapper.ToEntity(patient));
-                        return (patient, null);
-                    }
-                }
-                catch (Exception)
-                {
-                    // Continúa con registro offline.
-                }
+                var (dto, error) = await RegisterAsync(request, token);
+                if (dto != null)
+                    return (PatientMapper.FromDto(dto), null);
+                if (error != null && !error.Contains("conexión"))
+                    return (null, error);
             }
 
             var localPatient = new Patient
@@ -133,7 +227,7 @@ namespace Medical_atention.Services
                     {
                         await _repository.ReplaceAllAsync(remote.Select(PatientMapper.ToEntity));
                         await SecureStorage.SetAsync(
-                            Constants.AppConstants.LastPatientSyncKey,
+                            AppConstants.LastPatientSyncKey,
                             DateTime.UtcNow.ToString("o"));
                         return (remote, false, null);
                     }
@@ -177,8 +271,8 @@ namespace Medical_atention.Services
                         {
                             var dto = JsonConvert.DeserializeObject<PatientResponseDto>(
                                 await response.Content.ReadAsStringAsync());
-                            await _repository.ClearPendingPriorityAsync(id, dto.Priority);
-                            var entity = PatientMapper.ToEntity(MapToPatient(dto));
+                            await _repository.ClearPendingPriorityAsync(id, priority);
+                            var entity = PatientMapper.FromDtoToEntity(dto);
                             entity.LocalId = patientEntity.LocalId;
                             await _repository.UpsertAsync(entity);
                             LocalDataChangedHelper.NotifyPatientsChanged();
@@ -212,21 +306,41 @@ namespace Medical_atention.Services
         public Task SyncPendingPriorityChangesAsync() =>
             _syncService.SyncPendingAsync();
 
-        private static Patient MapToPatient(PatientResponseDto dto) =>
-            new Patient
+        // ── Helpers ─────────────────────────────────────────────────────────────
+
+        private static async Task<HttpClient> CreateClientAsync(string token)
+        {
+            if (!string.IsNullOrEmpty(token))
             {
-                Id = dto.Id,
-                FirstName = dto.Name ?? string.Empty,
-                LastName = dto.LastName ?? string.Empty,
-                DocumentNumber = dto.IdentificationNumber ?? string.Empty,
-                DateOfBirth = dto.DateOfBirth,
-                Gender = dto.Gender ?? string.Empty,
-                Priority = (int)dto.Priority,
-                LastConsultationAt = dto.LastConsultationAt,
-                PendingSync = false,
-                PendingPrioritySync = false,
-                PendingPriority = null
+                var client = new HttpClient
+                {
+                    BaseAddress = new Uri(AppConstants.ApiBaseUrl.TrimEnd('/') + "/"),
+                    Timeout = TimeSpan.FromSeconds(15)
+                };
+                client.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                return client;
+            }
+
+            return await ApiClient.CreateAsync();
+        }
+
+        private static PatientResponseDto MapEntityToDto(PatientEntity entity)
+        {
+            var domain = PatientMapper.ToDomain(entity);
+            return new PatientResponseDto
+            {
+                Id = domain.Id,
+                Name = domain.FirstName,
+                LastName = domain.LastName,
+                IdentificationNumber = domain.DocumentNumber,
+                DateOfBirth = domain.DateOfBirth,
+                Gender = domain.Gender,
+                CreatedAt = DateTime.UtcNow,
+                Priority = PatientMapper.ToPriorityString(domain.EffectivePriority),
+                LastConsultationDate = domain.LastConsultationAt
             };
+        }
 
         private static async Task<List<Patient>> FetchPatientsFromApiAsync(string path)
         {
@@ -239,7 +353,7 @@ namespace Medical_atention.Services
                 var dtos = JsonConvert.DeserializeObject<List<PatientResponseDto>>(json)
                     ?? new List<PatientResponseDto>();
 
-                return dtos.Select(MapToPatient).ToList();
+                return dtos.Select(PatientMapper.FromDto).ToList();
             }
         }
     }

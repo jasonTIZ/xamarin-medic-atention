@@ -17,7 +17,6 @@ namespace Medical_atention.ViewModels
     public class TriageViewModel : INotifyPropertyChanged
     {
         private readonly IPatientService _patientService;
-        private readonly IConsultationService _consultationService;
         private bool _isLoading;
         private bool _isOffline;
         private bool _isEmpty;
@@ -26,12 +25,11 @@ namespace Medical_atention.ViewModels
         private bool _isSnackbarVisible;
         private bool _autoRefreshEnabled;
 
-        public TriageViewModel() : this(new PatientService(), new ConsultationService()) { }
+        public TriageViewModel() : this(new PatientService()) { }
 
-        public TriageViewModel(IPatientService patientService, IConsultationService consultationService)
+        public TriageViewModel(IPatientService patientService)
         {
             _patientService = patientService;
-            _consultationService = consultationService;
             Groups = new ObservableCollection<TriagePriorityGroup>();
             foreach (var level in PriorityHelper.AllLevels)
                 Groups.Add(new TriagePriorityGroup(level));
@@ -150,27 +148,6 @@ namespace Medical_atention.ViewModels
 
             if (!_patientService.IsOnline())
                 ShowSnackbar("Prioridad guardada localmente; se sincronizará al reconectar");
-
-            return true;
-        }
-
-        public async Task<bool> RegisterConsultationAsync(TriagePatientItem item)
-        {
-            if (item == null) return false;
-
-            var (success, error) = await _consultationService.RegisterConsultationAsync(item.Id);
-            if (!success)
-            {
-                ShowSnackbar(error ?? "No se pudo registrar la consulta");
-                return false;
-            }
-
-            item.LastConsultationAt = DateTime.UtcNow;
-
-            if (!string.IsNullOrEmpty(error))
-                ShowSnackbar(error);
-            else
-                ShowSnackbar("Consulta registrada");
 
             return true;
         }

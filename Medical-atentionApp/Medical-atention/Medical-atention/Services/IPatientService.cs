@@ -6,18 +6,18 @@ namespace Medical_atention.Services
 {
     public interface IPatientService
     {
-        bool IsOnline();
+        // Detalle / CRUD (dev)
+        Task<(PatientResponseDto patient, string error)> RegisterAsync(PatientRequestDto request, string token);
+        Task<PatientResponseDto> GetPatientAsync(int id, string token);
+        Task<List<PatientResponseDto>> GetAllPatientsAsync(string token);
+        Task<(PatientResponseDto patient, string error)> UpdateAsync(int id, PatientRequestDto request, string token);
+        Task<bool> DeleteAsync(int id, string token);
 
-        // ── Listado y detalle ──────────────────────────────────────────────────
+        // Triaje / offline
+        bool IsOnline();
         Task<IReadOnlyList<Patient>> LoadPatientsAsync(bool forceRefresh = false);
         Task<IReadOnlyList<Patient>> LoadPatientsFromLocalAsync();
-        Task<Patient> GetPatientAsync(int id);
-
-        // ── Registro ──────────────────────────────────────────────────────────
-        // Recibe el DTO del formulario, devuelve el modelo de dominio o un error.
-        Task<(Patient patient, string error)> RegisterAsync(PatientRequestDto request);
-
-        // ── Triaje ────────────────────────────────────────────────────────────
+        Task<(Patient patient, string error)> RegisterLocalAsync(PatientRequestDto request);
         Task<(IReadOnlyList<Patient> patients, bool fromCache, string error)> GetPatientsByPriorityAsync();
         Task<(bool success, string error)> UpdatePriorityAsync(int id, PriorityLevel priority);
         Task SyncPendingPriorityChangesAsync();

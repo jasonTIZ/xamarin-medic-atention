@@ -1,3 +1,5 @@
+using Medical_atention.Constants;
+using Medical_atention.Data;
 using Medical_atention.Models;
 using Medical_atention.Services;
 using System;
@@ -6,13 +8,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 
 namespace Medical_atention.ViewModels
 {
     public class PatientsViewModel : INotifyPropertyChanged
     {
         private readonly IPatientService _patientService;
-        private ObservableCollection<Patient> _patients = new ObservableCollection<Patient>();
+        private ObservableCollection<PatientResponseDto> _patients = new ObservableCollection<PatientResponseDto>();
         private bool _isLoading;
         private bool _isEmpty;
 
@@ -23,7 +26,7 @@ namespace Medical_atention.ViewModels
             _patientService = patientService;
         }
 
-        public ObservableCollection<Patient> Patients
+        public ObservableCollection<PatientResponseDto> Patients
         {
             get => _patients;
             set { _patients = value; OnPropertyChanged(); }
@@ -46,12 +49,35 @@ namespace Medical_atention.ViewModels
             IsLoading = true;
             try
             {
-                var list = await _patientService.LoadPatientsAsync();
-                Patients = new ObservableCollection<Patient>(list);
+                var patients = await _patientService.GetAllPatientsAsync(
+                    await SecureStorage.GetAsync(AppConstants.TokenKey));
+
+                var localPriorities = await LocalDatabase.Instance.GetLatestPrioritiesByPatientAsync();
+                foreach (var patient in patients)
+                    ApplyLatestPriority(patient, localPriorities);
+
+                Patients = new ObservableCollection<PatientResponseDto>(patients);
                 IsEmpty = !Patients.Any();
             }
             catch (Exception) { }
             finally { IsLoading = false; }
+        }
+
+        private static void ApplyLatestPriority(
+            PatientResponseDto patient,
+            System.Collections.Generic.Dictionary<int, (string Priority, DateTime ConsultationDate)> localPriorities)
+        {
+            if (localPriorities.TryGetValue(patient.Id, out var local))
+            {
+                if (patient.LastConsultationDate == null || local.ConsultationDate > patient.LastConsultationDate)
+                {
+                    patient.Priority = local.Priority;
+                    patient.LastConsultationDate = local.ConsultationDate;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(patient.Priority))
+                patient.Priority = null;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

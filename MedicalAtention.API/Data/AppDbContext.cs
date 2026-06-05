@@ -23,5 +23,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Patient>()
             .HasIndex(p => p.IdentificationNumber)
             .IsUnique();
+
+        modelBuilder.Entity<Consultation>()
+            .HasOne(c => c.Patient)
+            .WithMany()
+            .HasForeignKey(c => c.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

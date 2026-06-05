@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Medical_atention.Controls"
+             x:Class="Medical_atention.Views.ConsultationHistoryPage"
+             BackgroundColor="#F0F4F8"
+             Title="Historial de Consultas">
+
+    <Grid>
+        <StackLayout Spacing="0">
+            <Frame BackgroundColor="#EBF4FF"
+                   CornerRadius="0"
+                   Padding="16,12"
+                   HasShadow="False"
+                   BorderColor="Transparent">
+                <Label Text="{Binding PatientDisplayLine}"
+                       FontSize="14"
+                       TextColor="#1A365D" />
+            </Frame>
+
+            <StackLayout Padding="16,12,16,8" Spacing="10">
+
+                <Grid ColumnDefinitions="72,*" ColumnSpacing="10">
+                    <Label Text="Desde:"
+                           FontSize="14"
+                           TextColor="#4A5568"
+                           VerticalOptions="Center" />
+                    <Frame Grid.Column="1"
+                           BorderColor="#CBD5E0"
+                           CornerRadius="8"
+                           Padding="12,8"
+                           HasShadow="False"
+                           BackgroundColor="White"
+                           HeightRequest="48">
+                        <DatePicker Date="{Binding FilterFrom}"
+                                    Format="dd/MM/yyyy"
+                                    FontSize="15"
+                                    TextColor="#1A365D"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="FillAndExpand" />
+                    </Frame>
+                </Grid>
+
+                <Grid ColumnDefinitions="72,*,Auto" ColumnSpacing="10">
+                    <Label Text="Hasta:"
+                           FontSize="14"
+                           TextColor="#4A5568"
+                           VerticalOptions="Center" />
+                    <Frame Grid.Column="1"
+                           BorderColor="#CBD5E0"
+                           CornerRadius="8"
+                           Padding="12,8"
+                           HasShadow="False"
+                           BackgroundColor="White"
+                           HeightRequest="48">
+                        <DatePicker Date="{Binding FilterTo}"
+                                    Format="dd/MM/yyyy"
+                                    FontSize="15"
+                                    TextColor="#1A365D"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="FillAndExpand" />
+                    </Frame>
+                    <Button Grid.Column="2"
+                            Text="Filtrar"
+                            Command="{Binding FilterCommand}"
+                            BackgroundColor="Transparent"
+                            TextColor="#2C7BE5"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            Padding="12,0"
+                            VerticalOptions="Center"
+                            HeightRequest="48" />
+                </Grid>
+
+            </StackLayout>
+
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                               IsVisible="{Binding IsLoading}"
+                               Color="#2C7BE5"
+                               Margin="0,8,0,0" />
+
+            <CollectionView x:Name="ConsultationsList"
+                          ItemsSource="{Binding Consultations}"
+                          Margin="16,8,16,80"
+                          SelectionMode="Single"
+                          SelectionChanged="OnConsultationSelected">
+                <CollectionView.EmptyView>
+                    <StackLayout Padding="40,60"
+                                 VerticalOptions="Center"
+                                 HorizontalOptions="Center"
+                                 Spacing="12">
+                        <Label Text="📁+"
+                               FontSize="40"
+                               HorizontalOptions="Center"
+                               TextColor="#A0AEC0" />
+                        <Label Text="Este paciente aún no tiene consultas registradas."
+                               FontSize="14"
+                               TextColor="#718096"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center" />
+                    </StackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BorderColor="#E2E8F0"
+                               CornerRadius="12"
+                               Padding="14,12"
+                               HasShadow="True"
+                               BackgroundColor="White"
+                               Margin="0,0,0,10">
+                            <Grid RowDefinitions="Auto,Auto,Auto"
+                                  ColumnDefinitions="*,Auto"
+                                  RowSpacing="6"
+                                  ColumnSpacing="8">
+                                <Label Grid.Row="0" Grid.Column="0"
+                                       Text="{Binding DateDisplay}"
+                                       FontSize="12"
+                                       TextColor="#718096" />
+                                <controls:PriorityBadgeView Grid.Row="0" Grid.Column="1"
+                                                            Grid.RowSpan="2"
+                                                            Priority="{Binding Priority}"
+                                                            Size="Small"
+                                                            VerticalOptions="Start" />
+                                <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                       Text="{Binding DiagnosisTitle}"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="#1A202C"
+                                       LineBreakMode="TailTruncation" />
+                                <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                       Text="{Binding SummaryPreview}"
+                                       FontSize="13"
+                                       TextColor="#4A5568"
+                                       LineBreakMode="TailTruncation" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </StackLayout>
+
+        <Frame IsVisible="{Binding ShowOfflineIndicator}"
+               BackgroundColor="White"
+               BorderColor="#CBD5E0"
+               CornerRadius="24"
+               Padding="10"
+               HasShadow="True"
+               WidthRequest="48"
+               HeightRequest="48"
+               VerticalOptions="End"
+               HorizontalOptions="End"
+               Margin="0,0,20,24">
+            <Label Text="☁🕐"
+                   FontSize="16"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" />
+        </Frame>
+    </Grid>
+
+</ContentPage>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Medical_atention.Controls"
+             x:Class="Medical_atention.Views.ConsultationDetailPage"
+             BackgroundColor="#F0F4F8"
+             Title="Detalle de consulta">
+
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView Grid.Row="0">
+            <StackLayout Padding="24,20,24,16" Spacing="0">
+
+                <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                   IsVisible="{Binding IsLoading}"
+                                   Color="#2C7BE5"
+                                   Margin="0,40,0,0" />
+
+                <StackLayout IsVisible="{Binding IsNotLoading}" Spacing="0">
+
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,20">
+                        <Label Text="{Binding DateDisplay}"
+                               FontSize="14"
+                               TextColor="#718096"
+                               VerticalOptions="Center" />
+                        <controls:PriorityBadgeView Grid.Column="1"
+                                                    Priority="{Binding Priority}"
+                                                    Size="Medium"
+                                                    VerticalOptions="Center" />
+                    </Grid>
+
+                    <Label Text="Diagnóstico"
+                           FontSize="13" FontAttributes="Bold"
+                           TextColor="#4A5568"
+                           Margin="0,0,0,4" />
+                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                           Padding="16,12" HasShadow="False"
+                           BackgroundColor="White"
+                           Margin="0,0,0,16">
+                        <Label Text="{Binding Diagnosis}"
+                               FontSize="15" FontAttributes="Bold"
+                               TextColor="#1A202C" />
+                    </Frame>
+
+                    <Label Text="Síntomas"
+                           FontSize="13" FontAttributes="Bold"
+                           TextColor="#4A5568"
+                           Margin="0,0,0,4" />
+                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                           Padding="16,12" HasShadow="False"
+                           BackgroundColor="White"
+                           Margin="0,0,0,16">
+                        <Label Text="{Binding Symptoms}"
+                               FontSize="15"
+                               TextColor="#1A365D" />
+                    </Frame>
+
+                    <Label Text="Tratamiento"
+                           FontSize="13" FontAttributes="Bold"
+                           TextColor="#4A5568"
+                           Margin="0,0,0,4" />
+                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                           Padding="16,12" HasShadow="False"
+                           BackgroundColor="White"
+                           Margin="0,0,0,16">
+                        <StackLayout>
+                            <Label Text="{Binding TreatmentReadOnly}"
+                                   IsVisible="{Binding IsReadOnly}"
+                                   FontSize="15"
+                                   TextColor="#1A365D" />
+                            <Editor Text="{Binding Treatment}"
+                                    IsVisible="{Binding IsEditing}"
+                                    AutoSize="TextChanges"
+                                    MinimumHeightRequest="80"
+                                    TextColor="#1A365D"
+                                    Placeholder="Tratamiento indicado"
+                                    PlaceholderColor="#A0AEC0"
+                                    BackgroundColor="Transparent" />
+                        </StackLayout>
+                    </Frame>
+
+                    <Label Text="Notas"
+                           FontSize="13" FontAttributes="Bold"
+                           TextColor="#4A5568"
+                           Margin="0,0,0,4" />
+                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
+                           Padding="16,12" HasShadow="False"
+                           BackgroundColor="White"
+                           Margin="0,0,0,8">
+                        <StackLayout>
+                            <Label Text="{Binding NotesReadOnly}"
+                                   IsVisible="{Binding IsReadOnly}"
+                                   FontSize="15"
+                                   TextColor="#1A365D" />
+                            <Editor Text="{Binding Notes}"
+                                    IsVisible="{Binding IsEditing}"
+                                    AutoSize="TextChanges"
+                                    MinimumHeightRequest="80"
+                                    TextColor="#1A365D"
+                                    Placeholder="Notas adicionales"
+                                    PlaceholderColor="#A0AEC0"
+                                    BackgroundColor="Transparent" />
+                        </StackLayout>
+                    </Frame>
+
+                    <Label Text="{Binding ErrorMessage}"
+                           TextColor="#E53E3E" FontSize="13"
+                           IsVisible="{Binding HasError}"
+                           Margin="0,8,0,0" />
+
+                </StackLayout>
+
+            </StackLayout>
+        </ScrollView>
+
+        <StackLayout Grid.Row="1"
+                     Padding="24,8,24,24"
+                     IsVisible="{Binding IsNotLoading}"
+                     Spacing="8">
+
+            <Button Text="Editar"
+                    Command="{Binding EditCommand}"
+                    IsVisible="{Binding ShowEditButton}"
+                    BackgroundColor="#2C7BE5"
+                    TextColor="White"
+                    CornerRadius="8"
+                    FontAttributes="Bold"
+                    HeightRequest="48" />
+
+            <Grid IsVisible="{Binding ShowSaveCancel}"
+                  ColumnDefinitions="*,*"
+                  ColumnSpacing="12">
+                <Button Grid.Column="0"
+                        Text="Cancelar"
+                        Command="{Binding CancelCommand}"
+                        BackgroundColor="#E2E8F0"
+                        TextColor="#4A5568"
+                        CornerRadius="8"
+                        FontAttributes="Bold"
+                        HeightRequest="48" />
+                <Button Grid.Column="1"
+                        Text="Guardar"
+                        Command="{Binding SaveCommand}"
+                        BackgroundColor="#2C7BE5"
+                        TextColor="White"
+                        CornerRadius="8"
+                        FontAttributes="Bold"
+                        HeightRequest="48" />
+            </Grid>
+
+            <ActivityIndicator IsRunning="{Binding IsSaving}"
+                               IsVisible="{Binding IsSaving}"
+                               Color="#2C7BE5"
+                               HorizontalOptions="Center" />
+
+        </StackLayout>
+    </Grid>
+
+</ContentPage>

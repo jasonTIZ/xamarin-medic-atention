@@ -190,15 +190,31 @@ namespace Medical_atention.ViewModels
                     Gender = _selectedGender
                 };
 
-                var (patient, error) = await _patientService.RegisterAsync(request);
+                var token = await SecureStorage.GetAsync(AppConstants.TokenKey);
+                int patientId;
 
-                if (error != null)
+                if (_patientService.IsOnline() && !string.IsNullOrEmpty(token))
                 {
-                    if (error.Contains("cédula"))
-                        IdentificationNumberError = error;
-                    else
+                    var (dto, error) = await _patientService.RegisterAsync(request, token);
+                    if (error != null)
+                    {
+                        if (error.Contains("cédula"))
+                            IdentificationNumberError = error;
+                        else
+                            GeneralError = error;
+                        return;
+                    }
+                    patientId = dto.Id;
+                }
+                else
+                {
+                    var (local, error) = await _patientService.RegisterLocalAsync(request);
+                    if (error != null)
+                    {
                         GeneralError = error;
-                    return;
+                        return;
+                    }
+                    patientId = local.Id;
                 }
 
                 Device.BeginInvokeOnMainThread(() =>
@@ -206,12 +222,10 @@ namespace Medical_atention.ViewModels
                     SnackbarMessage = "Paciente registrado exitosamente.";
                     IsSnackbarVisible = true;
                 });
-
-                var patientId = patient.Id;
                 Device.StartTimer(TimeSpan.FromSeconds(2), () =>
                 {
                     Device.BeginInvokeOnMainThread(async () =>
-                        await Shell.Current.GoToAsync($"patientdetail?patientId={patientId}"));
+                        await Shell.Current.GoToAsync($"PatientDetailPage?id={patientId}"));
                     return false;
                 });
             }

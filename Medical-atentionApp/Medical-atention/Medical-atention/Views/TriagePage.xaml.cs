@@ -117,7 +117,10 @@ namespace Medical_atention.Views
             var item = GetItemFromView(sender as Element);
             if (item == null) return;
 
-            await _viewModel.RegisterConsultationAsync(item);
+            var name = Uri.EscapeDataString(item.FullName ?? string.Empty);
+            var cedula = Uri.EscapeDataString(item.IdentificationNumber ?? string.Empty);
+            await Shell.Current.GoToAsync(
+                $"{nameof(RegisterConsultationPage)}?patientId={item.Id}&patientName={name}&patientCedula={cedula}");
         }
     }
 }

@@ -199,7 +199,7 @@ namespace Medical_atention.ViewModels
         private async Task OnPatientSelectedAsync(Patient patient)
         {
             if (patient == null) return;
-            await Shell.Current.GoToAsync($"patientdetail?patientId={patient.Id}");
+            await Shell.Current.GoToAsync($"PatientDetailPage?id={patient.Id}");
         }
 
         private void OnConnectivityChanged(object sender, ConnectivityChangedEventArgs e)

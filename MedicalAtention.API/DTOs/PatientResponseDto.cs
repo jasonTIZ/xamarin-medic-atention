@@ -1,5 +1,3 @@
-using MedicalAtention.API.Models;
-
 namespace MedicalAtention.API.DTOs;
 
 public record PatientResponseDto(
@@ -9,6 +7,6 @@ public record PatientResponseDto(
     string IdentificationNumber,
     DateTime DateOfBirth,
     string Gender,
-    PriorityLevel Priority,
-    DateTime? LastConsultationAt,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    string? Priority = null,
+    DateTime? LastConsultationDate = null);

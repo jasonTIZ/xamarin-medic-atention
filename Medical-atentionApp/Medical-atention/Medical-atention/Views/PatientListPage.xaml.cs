@@ -31,7 +31,7 @@ namespace Medical_atention.Views
                 list.SelectedItem = null;
 
             if (BindingContext is PatientListViewModel vm)
-                await Shell.Current.GoToAsync($"patientdetail?patientId={patient.Id}");
+                await Shell.Current.GoToAsync($"PatientDetailPage?id={patient.Id}");
         }
     }
 }

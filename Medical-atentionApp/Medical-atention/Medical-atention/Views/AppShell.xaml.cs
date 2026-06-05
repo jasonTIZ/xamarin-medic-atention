@@ -12,8 +12,11 @@ namespace Medical_atention.Views
         public AppShell()
         {
             InitializeComponent();
-            Routing.RegisterRoute("patientdetail", typeof(PatientDetailPage));
             Routing.RegisterRoute(nameof(RegisterPatientPage), typeof(RegisterPatientPage));
+            Routing.RegisterRoute(nameof(PatientDetailPage), typeof(PatientDetailPage));
+            Routing.RegisterRoute(nameof(ConsultationDetailPage), typeof(ConsultationDetailPage));
+            Routing.RegisterRoute(nameof(RegisterConsultationPage), typeof(RegisterConsultationPage));
+            Routing.RegisterRoute(nameof(ConsultationHistoryPage), typeof(ConsultationHistoryPage));
             _ = LoadUserInfoAsync();
         }
 

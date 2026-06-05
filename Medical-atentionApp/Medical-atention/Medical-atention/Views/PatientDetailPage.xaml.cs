@@ -5,29 +5,24 @@ using Xamarin.Forms.Xaml;
 namespace Medical_atention.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    [QueryProperty(nameof(PatientId), "patientId")]
+    [QueryProperty(nameof(PatientId), "id")]
     public partial class PatientDetailPage : ContentPage
     {
-        private string _patientId;
-
-        public string PatientId
-        {
-            get => _patientId;
-            set => _patientId = value;
-        }
-
         public PatientDetailPage()
         {
             InitializeComponent();
         }
 
-        protected override async void OnAppearing()
+        public string PatientId
         {
-            base.OnAppearing();
-            if (BindingContext is PatientDetailViewModel vm &&
-                int.TryParse(PatientId, out var id))
+            set
             {
-                await vm.LoadAsync(id);
+                if (int.TryParse(value, out var id))
+                {
+                    if (BindingContext is PatientDetailViewModel existing && existing.PatientId == id)
+                        return;
+                    BindingContext = new PatientDetailViewModel(id);
+                }
             }
         }
     }
