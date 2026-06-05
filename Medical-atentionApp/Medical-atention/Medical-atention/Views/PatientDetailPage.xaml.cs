@@ -18,7 +18,11 @@ namespace Medical_atention.Views
             set
             {
                 if (int.TryParse(value, out var id))
+                {
+                    if (BindingContext is PatientDetailViewModel existing && existing.PatientId == id)
+                        return;
                     BindingContext = new PatientDetailViewModel(id);
+                }
             }
         }
     }

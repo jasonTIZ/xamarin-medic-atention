@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Medical_atention.Controls"
+             x:Class="Medical_atention.Views.PatientListPage"
+             BackgroundColor="#F0F4F8"
+             Title="Pacientes">
+
+    <Grid>
+        <AbsoluteLayout x:Name="RootLayout">
+
+        <StackLayout AbsoluteLayout.LayoutBounds="0,0,1,1"
+                     AbsoluteLayout.LayoutFlags="All"
+                     Padding="16,16,16,88" Spacing="0">
+
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                               IsVisible="{Binding IsLoading}"
+                               Color="#2C7BE5"
+                               Margin="0,40,0,0" />
+
+            <StackLayout IsVisible="{Binding IsEmpty}"
+                         VerticalOptions="CenterAndExpand"
+                         HorizontalOptions="CenterAndExpand"
+                         Spacing="12"
+                         Margin="0,80,0,0">
+                <Label Text="Sin pacientes registrados"
+                       FontSize="16" FontAttributes="Bold"
+                       TextColor="#718096"
+                       HorizontalOptions="Center" />
+                <Label Text="Registra el primero usando el botón +"
+                       FontSize="13"
+                       TextColor="#A0AEC0"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
+            </StackLayout>
+
+            <CollectionView x:Name="PatientsList"
+                            ItemsSource="{Binding Patients}"
+                            SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BorderColor="#E2E8F0" CornerRadius="12"
+                               Padding="12" HasShadow="False"
+                               BackgroundColor="White"
+                               Margin="0,0,0,10">
+                            <Grid ColumnDefinitions="48,*,40" ColumnSpacing="12">
+                                <Frame Grid.Column="0"
+                                       BackgroundColor="#EBF4FF"
+                                       CornerRadius="24"
+                                       Padding="0"
+                                       HasShadow="False"
+                                       HeightRequest="48"
+                                       WidthRequest="48"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center">
+                                    <Label Text="{Binding Initials}"
+                                           FontSize="16" FontAttributes="Bold"
+                                           TextColor="#2C7BE5"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center" />
+                                </Frame>
+
+                                <StackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                                    <Label Text="{Binding FullName}"
+                                           FontSize="15" FontAttributes="Bold"
+                                           TextColor="#1A202C"
+                                           LineBreakMode="TailTruncation" />
+                                    <Label Text="{Binding IdentificationNumber, StringFormat='Cédula: {0}'}"
+                                           FontSize="12"
+                                           TextColor="#718096" />
+                                    <controls:PriorityBadgeView Priority="{Binding Priority}"
+                                                                Size="Small"
+                                                                IsVisible="{Binding HasPriority}"
+                                                                HorizontalOptions="Start" />
+                                </StackLayout>
+
+                                <Button Grid.Column="2"
+                                        Text="⋮"
+                                        FontSize="18"
+                                        TextColor="#718096"
+                                        BackgroundColor="#EDF2F7"
+                                        CornerRadius="20"
+                                        WidthRequest="36"
+                                        HeightRequest="36"
+                                        Padding="0"
+                                        VerticalOptions="Start"
+                                        HorizontalOptions="End"
+                                        Clicked="OnMenuClicked"
+                                        CommandParameter="{Binding .}" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </StackLayout>
+
+        <BoxView x:Name="MenuOverlay"
+                 Color="#80000000"
+                 IsVisible="False"
+                 AbsoluteLayout.LayoutBounds="0,0,1,1"
+                 AbsoluteLayout.LayoutFlags="All">
+            <BoxView.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnMenuDismissed" />
+            </BoxView.GestureRecognizers>
+        </BoxView>
+
+        <Frame x:Name="MenuPopup"
+               IsVisible="False"
+               BackgroundColor="White"
+               CornerRadius="12"
+               Padding="0"
+               HasShadow="True"
+               BorderColor="#E2E8F0"
+               WidthRequest="260"
+               AbsoluteLayout.LayoutBounds="0,0,260,220"
+               AbsoluteLayout.LayoutFlags="None">
+            <StackLayout Spacing="0">
+                <Button Text="Ver Historial Completo"
+                        Clicked="OnMenuHistorial"
+                        BackgroundColor="Transparent"
+                        TextColor="#2D3748"
+                        FontSize="14"
+                        HorizontalOptions="Fill"
+                        Padding="16,14" />
+                <BoxView HeightRequest="1" Color="#EDF2F7" />
+                <Button Text="Detalle del Paciente"
+                        Clicked="OnMenuDetail"
+                        BackgroundColor="Transparent"
+                        TextColor="#2D3748"
+                        FontSize="14"
+                        HorizontalOptions="Fill"
+                        Padding="16,14" />
+                <BoxView HeightRequest="1" Color="#EDF2F7" />
+                <Button Text="Nueva Consulta"
+                        Clicked="OnMenuNewConsultation"
+                        BackgroundColor="Transparent"
+                        TextColor="#2D3748"
+                        FontSize="14"
+                        HorizontalOptions="Fill"
+                        Padding="16,14" />
+                <BoxView HeightRequest="1" Color="#EDF2F7" />
+                <Button Text="Eliminar Paciente"
+                        Clicked="OnMenuDelete"
+                        BackgroundColor="Transparent"
+                        TextColor="#E53E3E"
+                        FontSize="14"
+                        HorizontalOptions="Fill"
+                        Padding="16,14" />
+            </StackLayout>
+        </Frame>
+
+        </AbsoluteLayout>
+
+        <Frame BackgroundColor="#2C7BE5"
+               CornerRadius="28"
+               HasShadow="True"
+               HeightRequest="56"
+               WidthRequest="56"
+               Padding="0"
+               VerticalOptions="End"
+               HorizontalOptions="End"
+               Margin="0,0,24,24">
+            <Frame.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnAddPatientTapped" />
+            </Frame.GestureRecognizers>
+            <Label Text="+"
+                   FontSize="32"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Center" />
+        </Frame>
+
+    </Grid>
+
+</ContentPage>
