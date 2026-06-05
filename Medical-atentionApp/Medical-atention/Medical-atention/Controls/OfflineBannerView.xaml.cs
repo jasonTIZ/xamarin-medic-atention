@@ -119,7 +119,7 @@ namespace Medical_atention.Controls
                         IsVisible = true;
                         Opacity = 0;
                         if (animate)
-                            await FadeTo(1, FadeInMs, Easing.CubicOut);
+                            await this.FadeTo(1, FadeInMs, Easing.CubicOut);
                         else
                             Opacity = 1;
                         _bannerShown = true;
@@ -128,7 +128,7 @@ namespace Medical_atention.Controls
                 else if (_bannerShown)
                 {
                     if (animate)
-                        await FadeTo(0, FadeOutMs, Easing.CubicIn);
+                        await this.FadeTo(0, FadeOutMs, Easing.CubicIn);
                     else
                         Opacity = 0;
                     IsVisible = false;
