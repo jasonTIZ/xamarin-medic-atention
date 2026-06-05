@@ -31,11 +31,6 @@
                       ContentTemplate="{DataTemplate views:TriagePage}"
                       Route="triage" />
 
-        <ShellContent Title="Consultas"
-                      Icon="📋"
-                      ContentTemplate="{DataTemplate views:ConsultationHistoryPage}"
-                      Route="consultations" />
-
         <ShellContent Title="Perfil"
                       Icon="👤"
                       ContentTemplate="{DataTemplate views:ProfilePage}"

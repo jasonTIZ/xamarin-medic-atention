@@ -67,7 +67,7 @@
                                 <Label Text="{Binding Title}"
                                        FontSize="14"
                                        FontAttributes="Bold"
-                                       TextColor="#1A365D" />
+                                       TextColor="Black" />
                             </Frame>
                         </DataTemplate>
                     </CollectionView.GroupHeaderTemplate>
