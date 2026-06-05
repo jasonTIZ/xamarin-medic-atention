@@ -21,13 +21,16 @@
     </Shell.FlyoutHeader>
 
     <ShellContent Title="Pacientes"
-                  ContentTemplate="{DataTemplate views:PatientListPage}" />
+                  ContentTemplate="{DataTemplate views:PatientListPage}"
+                  Route="patients" />
 
     <ShellContent Title="Triaje"
-                  ContentTemplate="{DataTemplate views:TriagePage}" />
+                  ContentTemplate="{DataTemplate views:TriagePage}"
+                  Route="triage" />
 
     <ShellContent Title="Perfil"
-                  ContentTemplate="{DataTemplate views:ProfilePage}" />
+                  ContentTemplate="{DataTemplate views:ProfilePage}"
+                  Route="profile" />
 
     <MenuItem Text="Cerrar sesión"
               Clicked="OnLogoutClicked" />

@@ -1,57 +1,150 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:controls="clr-namespace:Medical_atention.Controls"
+             xmlns:conv="clr-namespace:Medical_atention.Converters"
              x:Class="Medical_atention.Views.TriagePage"
              BackgroundColor="#F0F4F8"
              Title="Triaje">
 
-    <ScrollView>
-        <StackLayout Padding="16,16,16,24" Spacing="16">
+    <ContentPage.Resources>
+        <conv:PriorityLevelToColorConverter x:Key="PriorityColorConverter" />
+    </ContentPage.Resources>
 
-            <Label Text="Cola de espera"
-                   FontSize="16" FontAttributes="Bold"
-                   TextColor="#1A365D" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-            <CollectionView ItemsSource="{Binding Queue}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame BorderColor="#E2E8F0" CornerRadius="12"
-                               Padding="16,12" HasShadow="False"
-                               BackgroundColor="White"
-                               Margin="0,0,0,10">
-                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="6">
-                                <Label Grid.Row="0" Grid.Column="0"
-                                       Text="{Binding PatientName}"
-                                       FontSize="15" FontAttributes="Bold"
-                                       TextColor="#1A202C" />
-                                <controls:PriorityBadgeView Grid.Row="0" Grid.Column="1"
-                                                            Priority="{Binding Priority}"
-                                                            Size="Medium"
-                                                            VerticalOptions="Center" />
-                                <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                                       Text="{Binding IdentificationNumber, StringFormat='Cédula: {0}'}"
-                                       FontSize="12" TextColor="#718096" />
-                                <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
-                                       Text="{Binding ChiefComplaint}"
-                                       FontSize="13" TextColor="#4A5568" />
-                            </Grid>
-                        </Frame>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+        <Frame Grid.Row="0"
+               IsVisible="{Binding IsOffline}"
+               BackgroundColor="#FFF5F5"
+               BorderColor="#FC8181"
+               CornerRadius="0"
+               Padding="12,8"
+               HasShadow="False"
+               Margin="0">
+            <Label Text="{Binding LastSyncText}"
+                   FontSize="12"
+                   TextColor="#C53030"
+                   HorizontalTextAlignment="Center" />
+        </Frame>
 
-            <Label Text="Referencia de tamaños"
-                   FontSize="14" FontAttributes="Bold"
-                   TextColor="#4A5568"
-                   Margin="0,8,0,0" />
-            <StackLayout Orientation="Horizontal" Spacing="8">
-                <controls:PriorityBadgeView Priority="urgent" Size="Small" />
-                <controls:PriorityBadgeView Priority="high" Size="Medium" />
-                <controls:PriorityBadgeView Priority="low" Size="Large" />
-            </StackLayout>
+        <RefreshView x:Name="RefreshHost"
+                     Grid.Row="1"
+                     Refreshing="OnRefreshing">
+            <Grid>
+                <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                   IsVisible="{Binding IsLoading}"
+                                   Color="#2C7BE5"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center" />
 
-        </StackLayout>
-    </ScrollView>
+                <StackLayout IsVisible="{Binding IsEmpty}"
+                             VerticalOptions="Center"
+                             HorizontalOptions="Center"
+                             Padding="24"
+                             Spacing="8">
+                    <Label Text="No hay pacientes para triaje"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           TextColor="#718096"
+                           HorizontalTextAlignment="Center" />
+                </StackLayout>
 
+                <CollectionView x:Name="TriageList"
+                              ItemsSource="{Binding Groups}"
+                              IsGrouped="True"
+                              IsVisible="{Binding HasPatients}">
+                    <CollectionView.GroupHeaderTemplate>
+                        <DataTemplate>
+                            <Frame BackgroundColor="{Binding BackgroundColor}"
+                                   CornerRadius="8"
+                                   Padding="12,8"
+                                   Margin="16,12,16,4"
+                                   HasShadow="False"
+                                   BorderColor="Transparent">
+                                <Label Text="{Binding Title}"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       TextColor="#1A365D" />
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.GroupHeaderTemplate>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <SwipeView>
+                                <SwipeView.RightItems>
+                                    <SwipeItems Mode="Reveal">
+                                        <SwipeItem Text="Prioridad"
+                                                   BackgroundColor="#2C7BE5"
+                                                   Invoked="OnSwipePriorityInvoked" />
+                                    </SwipeItems>
+                                </SwipeView.RightItems>
+                                <Frame BorderColor="#CBD5E0"
+                                       CornerRadius="8"
+                                       Padding="12"
+                                       HasShadow="False"
+                                       BackgroundColor="White"
+                                       Margin="16,4,16,4">
+                                    <StackLayout Spacing="4">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <Label Grid.Column="0"
+                                                   Text="{Binding FullName}"
+                                                   FontSize="15"
+                                                   FontAttributes="Bold"
+                                                   TextColor="#1A365D" />
+                                            <Frame Grid.Column="1"
+                                                   Padding="8,2"
+                                                   CornerRadius="12"
+                                                   HasShadow="False"
+                                                   BorderColor="Transparent"
+                                                   BackgroundColor="{Binding Priority, Converter={StaticResource PriorityColorConverter}}">
+                                                <Frame.GestureRecognizers>
+                                                    <TapGestureRecognizer Tapped="OnPriorityBadgeTapped" />
+                                                </Frame.GestureRecognizers>
+                                                <Label Text="{Binding PriorityLabel}"
+                                                       FontSize="11"
+                                                       TextColor="White" />
+                                            </Frame>
+                                        </Grid>
+                                        <Label Text="{Binding IdentificationNumber, StringFormat='Cédula: {0}'}"
+                                               FontSize="12"
+                                               TextColor="#718096" />
+                                        <Label Text="{Binding LastConsultationText}"
+                                               FontSize="12"
+                                               TextColor="#4A5568" />
+                                        <Button Text="Registrar consulta"
+                                                FontSize="12"
+                                                BackgroundColor="#EBF8FF"
+                                                TextColor="#2C7BE5"
+                                                CornerRadius="6"
+                                                Padding="8,4"
+                                                HorizontalOptions="Start"
+                                                Clicked="OnRegisterConsultationClicked" />
+                                    </StackLayout>
+                                </Frame>
+                            </SwipeView>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </RefreshView>
+
+        <Frame Grid.Row="1"
+               VerticalOptions="End"
+               HorizontalOptions="FillAndExpand"
+               IsVisible="{Binding IsSnackbarVisible}"
+               BackgroundColor="#2D3748"
+               CornerRadius="8"
+               Padding="16,12"
+               Margin="16,0,16,16"
+               HasShadow="True"
+               BorderColor="Transparent">
+            <Label Text="{Binding SnackbarMessage}"
+                   TextColor="White"
+                   FontSize="13"
+                   HorizontalTextAlignment="Center" />
+        </Frame>
+    </Grid>
 </ContentPage>

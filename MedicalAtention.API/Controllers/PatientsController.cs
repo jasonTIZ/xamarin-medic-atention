@@ -40,6 +40,7 @@ public class PatientsController(AppDbContext db) : ControllerBase
             IdentificationNumber = request.IdentificationNumber.Trim(),
             DateOfBirth = request.DateOfBirth,
             Gender = request.Gender,
+            Priority = PriorityLevel.Medium,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -50,8 +51,28 @@ public class PatientsController(AppDbContext db) : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetAll()
-        => Ok(db.Patients.AsEnumerable().Select(MapPatient));
+    public IActionResult GetAll([FromQuery] string? sort)
+    {
+        var patients = db.Patients.AsEnumerable().Select(MapPatient).ToList();
+
+        if (string.Equals(sort, "priority", StringComparison.OrdinalIgnoreCase))
+        {
+            patients = patients
+                .OrderBy(p => PriorityOrder(p.Priority))
+                .ThenBy(p => p.LastName)
+                .ThenBy(p => p.Name)
+                .ToList();
+        }
+        else
+        {
+            patients = patients
+                .OrderBy(p => p.LastName)
+                .ThenBy(p => p.Name)
+                .ToList();
+        }
+
+        return Ok(patients);
+    }
 
     [HttpGet("{id}")]
     public IActionResult GetById(int id)
@@ -59,25 +80,6 @@ public class PatientsController(AppDbContext db) : ControllerBase
         var patient = db.Patients.Find(id);
         if (patient is null) return NotFound();
         return Ok(MapPatient(patient));
-    }
-
-    private PatientResponseDto MapPatient(Patient patient)
-    {
-        var last = db.Consultations
-            .Where(c => c.PatientId == patient.Id)
-            .OrderByDescending(c => c.ConsultationDate)
-            .FirstOrDefault();
-
-        return new PatientResponseDto(
-            patient.Id,
-            patient.Name,
-            patient.LastName,
-            patient.IdentificationNumber,
-            patient.DateOfBirth,
-            patient.Gender,
-            patient.CreatedAt,
-            last?.Priority,
-            last?.ConsultationDate);
     }
 
     [HttpPut("{id}")]
@@ -155,6 +157,27 @@ public class PatientsController(AppDbContext db) : ControllerBase
         ));
     }
 
+    [HttpPatch("{id}/priority")]
+    public IActionResult UpdatePriority(int id, [FromBody] UpdatePatientPriorityRequest request)
+    {
+        var patient = db.Patients.Find(id);
+        if (patient is null) return NotFound();
+
+        patient.Priority = request.Priority;
+        patient.UpdatedAt = DateTime.UtcNow;
+
+        var last = db.Consultations
+            .Where(c => c.PatientId == patient.Id)
+            .OrderByDescending(c => c.ConsultationDate)
+            .FirstOrDefault();
+
+        if (last is not null)
+            last.Priority = PriorityToString(request.Priority);
+
+        db.SaveChanges();
+        return Ok(MapPatient(patient));
+    }
+
     private static IEnumerable<string> ExtractMedications(IEnumerable<string> treatments)
     {
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -169,4 +192,44 @@ public class PatientsController(AppDbContext db) : ControllerBase
         }
         return seen.Take(10);
     }
+
+    private PatientResponseDto MapPatient(Patient patient)
+    {
+        var last = db.Consultations
+            .Where(c => c.PatientId == patient.Id)
+            .OrderByDescending(c => c.ConsultationDate)
+            .FirstOrDefault();
+
+        var priority = last?.Priority ?? PriorityToString(patient.Priority);
+        var lastDate = last?.ConsultationDate ?? patient.LastConsultationAt;
+
+        return new PatientResponseDto(
+            patient.Id,
+            patient.Name,
+            patient.LastName,
+            patient.IdentificationNumber,
+            patient.DateOfBirth,
+            patient.Gender,
+            patient.CreatedAt,
+            priority,
+            lastDate);
+    }
+
+    private static int PriorityOrder(string? priority) => priority?.ToLowerInvariant() switch
+    {
+        "urgent" => 0,
+        "high" => 1,
+        "medium" => 2,
+        "low" => 3,
+        _ => 2
+    };
+
+    private static string PriorityToString(PriorityLevel level) => level switch
+    {
+        PriorityLevel.Urgent => "urgent",
+        PriorityLevel.High => "high",
+        PriorityLevel.Medium => "medium",
+        PriorityLevel.Low => "low",
+        _ => "medium"
+    };
 }
