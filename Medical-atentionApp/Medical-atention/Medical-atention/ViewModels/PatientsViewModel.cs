@@ -1,5 +1,6 @@
 using Medical_atention.Constants;
 using Medical_atention.Data;
+using Medical_atention.Helpers;
 using Medical_atention.Models;
 using Medical_atention.Services;
 using System;
@@ -103,21 +104,15 @@ namespace Medical_atention.ViewModels
 
         private static List<PatientResponseDto> FilterByQuery(List<PatientResponseDto> source, string query)
         {
-            var queryLower = query.ToLowerInvariant();
-            var queryNormalized = NormalizeForComparison(query);
+            var queryNormalized = StringNormalizationHelper.NormalizeForSearch(query);
+            if (string.IsNullOrEmpty(queryNormalized))
+                return source.ToList();
 
             return source.Where(p =>
-            {
-                var fullName = p.FullName ?? string.Empty;
-                var nameMatch = fullName.ToLowerInvariant().Contains(queryLower)
-                    || NormalizeForComparison(fullName).Contains(queryNormalized);
-
-                var documentNormalized = NormalizeForComparison(p.IdentificationNumber);
-                var documentMatch = !string.IsNullOrEmpty(queryNormalized)
-                    && documentNormalized.Contains(queryNormalized);
-
-                return nameMatch || documentMatch;
-            }).ToList();
+                StringNormalizationHelper.ContainsNormalized(p.FullName, queryNormalized, queryAlreadyNormalized: true)
+                || StringNormalizationHelper.ContainsNormalized(
+                    p.IdentificationNumber, queryNormalized, queryAlreadyNormalized: true)
+            ).ToList();
         }
 
         private void ReplaceFilteredList(List<PatientResponseDto> filtered)
@@ -134,15 +129,6 @@ namespace Medical_atention.ViewModels
 
             var parts = value.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             return string.Join(" ", parts);
-        }
-
-        private static string NormalizeForComparison(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                return string.Empty;
-
-            var chars = value.Where(char.IsLetterOrDigit).ToArray();
-            return new string(chars).ToLowerInvariant();
         }
 
         private static void ApplyLatestPriority(
