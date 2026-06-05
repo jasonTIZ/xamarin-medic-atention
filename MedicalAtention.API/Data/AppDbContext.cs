@@ -8,14 +8,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<User> Users { get; set; }
     public DbSet<Patient> Patients { get; set; }
     public DbSet<Consultation> Consultations { get; set; }
+    public DbSet<ConsultationAttachment> Attachments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Consultation>()
-            .HasOne(c => c.Patient)
-            .WithMany()
-            .HasForeignKey(c => c.PatientId)
-            .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();
@@ -28,6 +24,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne(c => c.Patient)
             .WithMany()
             .HasForeignKey(c => c.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ConsultationAttachment>()
+            .HasOne(a => a.Consultation)
+            .WithMany()
+            .HasForeignKey(a => a.ConsultationId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

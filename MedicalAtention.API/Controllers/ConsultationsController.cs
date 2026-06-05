@@ -3,14 +3,17 @@ using MedicalAtention.API.DTOs;
 using MedicalAtention.API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 namespace MedicalAtention.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ConsultationsController(AppDbContext db) : ControllerBase
+public class ConsultationsController(AppDbContext db, IWebHostEnvironment env) : ControllerBase
 {
+    private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
+        { "image/jpeg", "image/jpg", "image/png" };
+    private const int MaxAttachmentsPerConsultation = 3;
+    private const long MaxFileSizeBytes = 5 * 1024 * 1024; // 5 MB
     private static readonly HashSet<string> ValidPriorities = new(StringComparer.OrdinalIgnoreCase)
         { "urgent", "high", "medium", "low" };
 
@@ -120,6 +123,98 @@ public class ConsultationsController(AppDbContext db) : ControllerBase
         db.SaveChanges();
 
         return Ok(MapConsultation(consultation));
+    }
+
+    [HttpPost("{id:int}/attachments")]
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(16 * 1024 * 1024)]
+    public async Task<IActionResult> UploadAttachments(int id, [FromForm] IFormFileCollection files)
+    {
+        var consultation = db.Consultations.Find(id);
+        if (consultation is null) return NotFound(new { message = "Consulta no encontrada" });
+
+        if (files is null || files.Count == 0)
+            return BadRequest(new { message = "No se recibieron archivos" });
+
+        var existing = db.Attachments.Count(a => a.ConsultationId == id);
+        if (existing + files.Count > MaxAttachmentsPerConsultation)
+            return BadRequest(new { message = $"Máximo {MaxAttachmentsPerConsultation} imágenes por consulta" });
+
+        var uploadDir = Path.Combine(env.ContentRootPath, "uploads", "attachments", id.ToString());
+        Directory.CreateDirectory(uploadDir);
+
+        var created = new List<AttachmentResponseDto>();
+
+        foreach (var file in files)
+        {
+            if (!AllowedContentTypes.Contains(file.ContentType))
+                return BadRequest(new { message = $"Tipo de archivo no permitido: {file.ContentType}" });
+
+            if (file.Length > MaxFileSizeBytes)
+                return BadRequest(new { message = "Cada imagen debe ser menor a 5 MB" });
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (ext != ".jpg" && ext != ".jpeg" && ext != ".png") ext = ".jpg";
+
+            var storedName = $"{Guid.NewGuid()}{ext}";
+            var fullPath = Path.Combine(uploadDir, storedName);
+
+            using (var stream = System.IO.File.Create(fullPath))
+                await file.CopyToAsync(stream);
+
+            var attachment = new ConsultationAttachment
+            {
+                ConsultationId = id,
+                FileName = file.FileName,
+                StoragePath = Path.Combine("attachments", id.ToString(), storedName),
+                FileSizeBytes = file.Length,
+                ContentType = file.ContentType,
+                UploadedAt = DateTime.UtcNow
+            };
+
+            db.Attachments.Add(attachment);
+            db.SaveChanges();
+
+            created.Add(MapAttachment(attachment, Request));
+        }
+
+        return Ok(created);
+    }
+
+    [HttpGet("{id:int}/attachments")]
+    public IActionResult GetAttachments(int id)
+    {
+        if (db.Consultations.Find(id) is null)
+            return NotFound(new { message = "Consulta no encontrada" });
+
+        var list = db.Attachments
+            .Where(a => a.ConsultationId == id)
+            .OrderBy(a => a.UploadedAt)
+            .Select(a => MapAttachment(a, Request))
+            .ToList();
+
+        return Ok(list);
+    }
+
+    [HttpDelete("{id:int}/attachments/{attachmentId:int}")]
+    public IActionResult DeleteAttachment(int id, int attachmentId)
+    {
+        var attachment = db.Attachments.FirstOrDefault(a => a.Id == attachmentId && a.ConsultationId == id);
+        if (attachment is null) return NotFound();
+
+        var fullPath = Path.Combine(env.ContentRootPath, "uploads", attachment.StoragePath);
+        if (System.IO.File.Exists(fullPath))
+            System.IO.File.Delete(fullPath);
+
+        db.Attachments.Remove(attachment);
+        db.SaveChanges();
+        return NoContent();
+    }
+
+    private static AttachmentResponseDto MapAttachment(ConsultationAttachment a, HttpRequest req)
+    {
+        var url = $"{req.Scheme}://{req.Host}/uploads/{a.StoragePath.Replace('\\', '/')}";
+        return new AttachmentResponseDto(a.Id, a.ConsultationId, a.FileName, url, a.FileSizeBytes, a.UploadedAt);
     }
 
     private static ConsultationResponseDto MapConsultation(Consultation consultation)

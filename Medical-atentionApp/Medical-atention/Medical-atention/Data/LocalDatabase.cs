@@ -42,6 +42,7 @@ namespace Medical_atention.Data
             await _connection.CreateTableAsync<LocalConsultation>();
             await _connection.CreateTableAsync<PatientEntity>();
             await _connection.CreateTableAsync<SyncQueueEntity>();
+            await _connection.CreateTableAsync<AttachmentEntity>();
             await EnsurePatientColumnsAsync();
             await EnsureConsultationsSchemaAsync();
 
@@ -124,6 +125,63 @@ namespace Medical_atention.Data
                         var latest = g.OrderByDescending(c => c.ConsultationDate).First();
                         return (latest.Priority, latest.ConsultationDate);
                     });
+        }
+
+        // ── Adjuntos (attachments) ────────────────────────────────────────────
+
+        public async Task<List<AttachmentEntity>> GetAttachmentsByConsultationAsync(
+            int consultationLocalId, int? consultationServerId)
+        {
+            var db = await GetConnectionAsync();
+            var byLocal = consultationLocalId > 0
+                ? await db.Table<AttachmentEntity>()
+                    .Where(a => a.ConsultationLocalId == consultationLocalId)
+                    .ToListAsync()
+                : new List<AttachmentEntity>();
+
+            if (consultationServerId.HasValue && consultationServerId.Value > 0)
+            {
+                var byServer = await db.Table<AttachmentEntity>()
+                    .Where(a => a.ConsultationServerId == consultationServerId.Value)
+                    .ToListAsync();
+                foreach (var a in byServer)
+                    if (!byLocal.Exists(x => x.Id == a.Id))
+                        byLocal.Add(a);
+            }
+
+            return byLocal.OrderBy(a => a.CreatedAt).ToList();
+        }
+
+        public async Task<int> SaveAttachmentAsync(AttachmentEntity attachment)
+        {
+            var db = await GetConnectionAsync();
+            if (attachment.Id == 0)
+                return await db.InsertAsync(attachment);
+            await db.UpdateAsync(attachment);
+            return attachment.Id;
+        }
+
+        public async Task UpdateAttachmentSyncedAsync(int id, int serverId, string remoteUrl)
+        {
+            var db = await GetConnectionAsync();
+            var entity = await db.Table<AttachmentEntity>().FirstOrDefaultAsync(a => a.Id == id);
+            if (entity is null) return;
+            entity.ServerId = serverId;
+            entity.RemoteUrl = remoteUrl;
+            entity.PendingSync = false;
+            await db.UpdateAsync(entity);
+        }
+
+        public async Task DeleteAttachmentAsync(int id)
+        {
+            var db = await GetConnectionAsync();
+            await db.DeleteAsync<AttachmentEntity>(id);
+        }
+
+        public async Task<List<AttachmentEntity>> GetPendingAttachmentsAsync()
+        {
+            var db = await GetConnectionAsync();
+            return await db.Table<AttachmentEntity>().Where(a => a.PendingSync).ToListAsync();
         }
 
         // ── Migraciones ───────────────────────────────────────────────────────

@@ -10,6 +10,7 @@ public static class DbInitializer
     {
         EnsureConsultationsTable(context);
         EnsurePatientPriorityColumns(context);
+        EnsureAttachmentsTable(context);
 
         if (context.Users.Any()) return;
 
@@ -79,6 +80,21 @@ public static class DbInitializer
         );
 
         context.SaveChanges();
+    }
+
+    private static void EnsureAttachmentsTable(AppDbContext context)
+    {
+        context.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS Attachments (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ConsultationId INTEGER NOT NULL,
+                FileName TEXT NOT NULL DEFAULT '',
+                StoragePath TEXT NOT NULL DEFAULT '',
+                FileSizeBytes INTEGER NOT NULL DEFAULT 0,
+                ContentType TEXT NOT NULL DEFAULT '',
+                UploadedAt TEXT NOT NULL,
+                FOREIGN KEY (ConsultationId) REFERENCES Consultations(Id) ON DELETE CASCADE
+            );");
     }
 
     private static void EnsureConsultationsTable(AppDbContext context)
