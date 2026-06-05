@@ -4,6 +4,7 @@ using MedicalAtention.API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace MedicalAtention.API.Controllers;
 
@@ -123,6 +124,39 @@ public class PatientsController(AppDbContext db) : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id}/history")]
+    public IActionResult GetHistory(int id)
+    {
+        var patient = db.Patients.Find(id);
+        if (patient is null)
+            return NotFound(new { message = "Paciente no encontrado" });
+
+        var consultations = db.Consultations
+            .Where(c => c.PatientId == id)
+            .OrderByDescending(c => c.ConsultationDate)
+            .ToList();
+
+        var recentDiagnoses = consultations
+            .Where(c => !string.IsNullOrWhiteSpace(c.Diagnosis))
+            .Take(5)
+            .Select(c => new DiagnosisSummary(c.Diagnosis, c.ConsultationDate.ToString("yyyy-MM-dd")));
+
+        var priorityEvolution = consultations
+            .OrderBy(c => c.ConsultationDate)
+            .Select(c => new PriorityPoint(c.ConsultationDate.ToString("yyyy-MM-dd"), c.Priority));
+
+        return Ok(new PatientHistoryResponse(
+            patient.Id,
+            $"{patient.Name} {patient.LastName}",
+            consultations.Count,
+            consultations.FirstOrDefault()?.ConsultationDate.ToString("yyyy-MM-dd"),
+            consultations.FirstOrDefault()?.Priority ?? "medium",
+            recentDiagnoses,
+            ExtractMedications(consultations.Select(c => c.Treatment)),
+            priorityEvolution
+        ));
+    }
+
     [HttpPatch("{id}/priority")]
     public IActionResult UpdatePriority(int id, [FromBody] UpdatePatientPriorityRequest request)
     {
@@ -142,6 +176,21 @@ public class PatientsController(AppDbContext db) : ControllerBase
 
         db.SaveChanges();
         return Ok(MapPatient(patient));
+    }
+
+    private static IEnumerable<string> ExtractMedications(IEnumerable<string> treatments)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var treatment in treatments.Where(t => !string.IsNullOrWhiteSpace(t)))
+        {
+            foreach (var segment in treatment.Split(new[] { ',', ';', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var entry = segment.Trim();
+                if (entry.Length >= 4 && entry.Length <= 80)
+                    seen.Add(entry);
+            }
+        }
+        return seen.Take(10);
     }
 
     private PatientResponseDto MapPatient(Patient patient)
