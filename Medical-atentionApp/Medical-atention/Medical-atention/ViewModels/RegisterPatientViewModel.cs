@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Medical_atention.ViewModels
@@ -195,7 +196,7 @@ namespace Medical_atention.ViewModels
 
                 if (_patientService.IsOnline() && !string.IsNullOrEmpty(token))
                 {
-                    var (dto, error) = await _patientService.RegisterAsync(request, token);
+                    var (patient, error) = await _patientService.RegisterAsync(request, token);
                     if (error != null)
                     {
                         if (error.Contains("cédula"))
@@ -204,7 +205,7 @@ namespace Medical_atention.ViewModels
                             GeneralError = error;
                         return;
                     }
-                    patientId = dto.Id;
+                    patientId = patient.Id;
                 }
                 else
                 {
