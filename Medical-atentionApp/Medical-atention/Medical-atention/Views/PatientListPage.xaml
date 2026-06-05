@@ -13,6 +13,14 @@
                      AbsoluteLayout.LayoutFlags="All"
                      Padding="16,16,16,88" Spacing="0">
 
+            <SearchBar Text="{Binding SearchText, Mode=TwoWay}"
+                       Placeholder="Buscar por nombre o cédula (sin guiones)"
+                       BackgroundColor="White"
+                       TextColor="#1A365D"
+                       PlaceholderColor="#A0AEC0"
+                       CancelButtonColor="#2C7BE5"
+                       Margin="0,0,0,12" />
+
             <ActivityIndicator IsRunning="{Binding IsLoading}"
                                IsVisible="{Binding IsLoading}"
                                Color="#2C7BE5"
@@ -34,8 +42,20 @@
                        HorizontalTextAlignment="Center" />
             </StackLayout>
 
+            <StackLayout IsVisible="{Binding ShowSearchEmpty}"
+                         VerticalOptions="CenterAndExpand"
+                         HorizontalOptions="CenterAndExpand"
+                         Margin="0,40,0,0">
+                <Label Text="{Binding EmptyMessage}"
+                       FontSize="15"
+                       TextColor="#718096"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
+            </StackLayout>
+
             <CollectionView x:Name="PatientsList"
-                            ItemsSource="{Binding Patients}"
+                            ItemsSource="{Binding FilteredPatients}"
+                            IsVisible="{Binding HasFilteredResults}"
                             SelectionMode="None">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>

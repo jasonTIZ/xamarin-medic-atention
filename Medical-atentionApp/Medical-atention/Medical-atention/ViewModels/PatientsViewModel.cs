@@ -3,6 +3,7 @@ using Medical_atention.Data;
 using Medical_atention.Models;
 using Medical_atention.Services;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -15,7 +16,10 @@ namespace Medical_atention.ViewModels
     public class PatientsViewModel : INotifyPropertyChanged
     {
         private readonly IPatientService _patientService;
-        private ObservableCollection<PatientResponseDto> _patients = new ObservableCollection<PatientResponseDto>();
+        private readonly ObservableCollection<PatientResponseDto> _filteredPatients =
+            new ObservableCollection<PatientResponseDto>();
+        private List<PatientResponseDto> _allPatients = new List<PatientResponseDto>();
+        private string _searchText = string.Empty;
         private bool _isLoading;
         private bool _isEmpty;
 
@@ -26,10 +30,21 @@ namespace Medical_atention.ViewModels
             _patientService = patientService;
         }
 
-        public ObservableCollection<PatientResponseDto> Patients
+        public ObservableCollection<PatientResponseDto> FilteredPatients => _filteredPatients;
+
+        public string SearchText
         {
-            get => _patients;
-            set { _patients = value; OnPropertyChanged(); }
+            get => _searchText;
+            set
+            {
+                var sanitized = SanitizeSearchInput(value);
+                if (_searchText == sanitized) return;
+                _searchText = sanitized;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(EmptyMessage));
+                OnPropertyChanged(nameof(ShowSearchEmpty));
+                ApplyFilter();
+            }
         }
 
         public bool IsLoading
@@ -44,6 +59,16 @@ namespace Medical_atention.ViewModels
             set { _isEmpty = value; OnPropertyChanged(); }
         }
 
+        public string EmptyMessage =>
+            string.IsNullOrWhiteSpace(_searchText)
+                ? "Sin pacientes registrados"
+                : "No se encontraron pacientes con ese criterio";
+
+        public bool HasFilteredResults => _filteredPatients.Any();
+
+        public bool ShowSearchEmpty =>
+            !IsEmpty && !string.IsNullOrWhiteSpace(_searchText) && !HasFilteredResults;
+
         public async Task LoadPatientsAsync()
         {
             IsLoading = true;
@@ -56,16 +81,73 @@ namespace Medical_atention.ViewModels
                 foreach (var patient in patients)
                     ApplyLatestPriority(patient, localPriorities);
 
-                Patients = new ObservableCollection<PatientResponseDto>(patients);
-                IsEmpty = !Patients.Any();
+                _allPatients = patients.ToList();
+                ApplyFilter();
             }
             catch (Exception) { }
             finally { IsLoading = false; }
         }
 
+        private void ApplyFilter()
+        {
+            var query = SanitizeSearchInput(_searchText);
+            var filtered = string.IsNullOrEmpty(query)
+                ? _allPatients
+                : FilterByQuery(_allPatients, query);
+
+            ReplaceFilteredList(filtered);
+            IsEmpty = !_allPatients.Any();
+            OnPropertyChanged(nameof(HasFilteredResults));
+            OnPropertyChanged(nameof(ShowSearchEmpty));
+        }
+
+        private static List<PatientResponseDto> FilterByQuery(List<PatientResponseDto> source, string query)
+        {
+            var queryLower = query.ToLowerInvariant();
+            var queryNormalized = NormalizeForComparison(query);
+
+            return source.Where(p =>
+            {
+                var fullName = p.FullName ?? string.Empty;
+                var nameMatch = fullName.ToLowerInvariant().Contains(queryLower)
+                    || NormalizeForComparison(fullName).Contains(queryNormalized);
+
+                var documentNormalized = NormalizeForComparison(p.IdentificationNumber);
+                var documentMatch = !string.IsNullOrEmpty(queryNormalized)
+                    && documentNormalized.Contains(queryNormalized);
+
+                return nameMatch || documentMatch;
+            }).ToList();
+        }
+
+        private void ReplaceFilteredList(List<PatientResponseDto> filtered)
+        {
+            _filteredPatients.Clear();
+            foreach (var patient in filtered)
+                _filteredPatients.Add(patient);
+        }
+
+        private static string SanitizeSearchInput(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            var parts = value.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            return string.Join(" ", parts);
+        }
+
+        private static string NormalizeForComparison(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            var chars = value.Where(char.IsLetterOrDigit).ToArray();
+            return new string(chars).ToLowerInvariant();
+        }
+
         private static void ApplyLatestPriority(
             PatientResponseDto patient,
-            System.Collections.Generic.Dictionary<int, (string Priority, DateTime ConsultationDate)> localPriorities)
+            Dictionary<int, (string Priority, DateTime ConsultationDate)> localPriorities)
         {
             if (localPriorities.TryGetValue(patient.Id, out var local))
             {
