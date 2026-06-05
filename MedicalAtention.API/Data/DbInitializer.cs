@@ -15,14 +15,11 @@ public static class DbInitializer
 
         var now = DateTime.UtcNow;
 
-        if (!context.Users.Any())
-        {
-            context.Users.AddRange(
-                new User { Name = "Administrador", Email = "admin@medic.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"), Role = "Admin", CreatedAt = now },
-                new User { Name = "Dr. García", Email = "doctor@medic.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Doctor123!"), Role = "Doctor", CreatedAt = now }
-            );
-            context.SaveChanges();
-        }
+        context.Users.AddRange(
+            new User { Name = "Administrador", Email = "admin@medic.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"), Role = "Admin", CreatedAt = now },
+            new User { Name = "Dr. García", Email = "doctor@medic.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Doctor123!"), Role = "Doctor", CreatedAt = now }
+        );
+        context.SaveChanges();
 
         if (!context.Patients.Any())
         {
