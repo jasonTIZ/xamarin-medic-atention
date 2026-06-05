@@ -99,6 +99,10 @@ appsettings.Local.json
 *.db-shm
 *.db-wal
 
+# APKs descargados de GitHub Actions (no commitear)
+apk-triaje/
+*.apk
+
 # Archivos de prueba HTTP de Visual Studio
 # (comenta esta línea si quieres trackearlos)
 # *.http
