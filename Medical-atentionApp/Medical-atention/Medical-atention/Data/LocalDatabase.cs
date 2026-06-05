@@ -17,7 +17,7 @@ namespace Medical_atention.Data
 
         private LocalDatabase()
         {
-            _initTask = InitializeAsync();
+            _initTask = InitializeDatabaseAsync();
         }
 
         public static LocalDatabase Instance => _instance.Value;
@@ -29,7 +29,7 @@ namespace Medical_atention.Data
             await Instance._initTask;
         }
 
-        private async Task InitializeAsync()
+        private async Task InitializeDatabaseAsync()
         {
             if (_initialized) return;
 
