@@ -16,7 +16,18 @@ namespace Medical_atention.ViewModels
         public string Name { get; set; }
         public string LastName { get; set; }
         public string IdentificationNumber { get; set; }
-        public DateTime? LastConsultationAt { get; set; }
+        private DateTime? _lastConsultationAt;
+
+        public DateTime? LastConsultationAt
+        {
+            get => _lastConsultationAt;
+            set
+            {
+                _lastConsultationAt = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(LastConsultationText));
+            }
+        }
 
         public string FullName => $"{Name} {LastName}".Trim();
 

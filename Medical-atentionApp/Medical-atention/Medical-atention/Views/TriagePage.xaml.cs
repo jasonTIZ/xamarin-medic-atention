@@ -117,7 +117,7 @@ namespace Medical_atention.Views
             var item = GetItemFromView(sender as Element);
             if (item == null) return;
 
-            await Shell.Current.GoToAsync($"patientdetail?patientId={item.Id}");
+            await _viewModel.RegisterConsultationAsync(item);
         }
     }
 }

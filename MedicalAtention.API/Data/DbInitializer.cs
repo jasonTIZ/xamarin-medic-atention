@@ -8,6 +8,7 @@ public static class DbInitializer
 {
     public static void Seed(AppDbContext context)
     {
+        EnsureConsultationsTable(context);
         EnsurePatientPriorityColumns(context);
 
         if (context.Users.Any()) return;
@@ -78,6 +79,23 @@ public static class DbInitializer
         );
 
         context.SaveChanges();
+    }
+
+    private static void EnsureConsultationsTable(AppDbContext context)
+    {
+        context.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS Consultations (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                PatientId INTEGER NOT NULL,
+                ConsultationDate TEXT NOT NULL,
+                Symptoms TEXT NOT NULL DEFAULT '',
+                Diagnosis TEXT NOT NULL DEFAULT '',
+                Treatment TEXT NOT NULL DEFAULT '',
+                Notes TEXT NOT NULL DEFAULT '',
+                CreatedAt TEXT NOT NULL,
+                UpdatedAt TEXT NULL,
+                FOREIGN KEY (PatientId) REFERENCES Patients(Id) ON DELETE CASCADE
+            );");
     }
 
     private static void EnsurePatientPriorityColumns(AppDbContext context)
