@@ -15,6 +15,7 @@ namespace Medical_atention.ViewModels
     public class PatientDetailViewModel : INotifyPropertyChanged
     {
         private readonly IPatientService _patientService;
+        private readonly INotificationService _notificationService;
         private static readonly Regex IdentificationNumberRegex = new Regex(@"^\d{9,12}$");
 
         private int _id;
@@ -36,17 +37,28 @@ namespace Medical_atention.ViewModels
         private DateTime _backupDateOfBirth;
         private string _backupGender;
 
-        public PatientDetailViewModel(int id) : this(id, new PatientService()) { }
+        private int _pendingReminderCount;
+        private bool _isCancellingReminders;
+        private string _reminderMessage = string.Empty;
+
+        public PatientDetailViewModel(int id) : this(id, new PatientService(), new NotificationService()) { }
+
+        public PatientDetailViewModel(int id, IPatientService patientService)
+            : this(id, patientService, new NotificationService()) { }
 
         public int PatientId => _id;
 
-        public PatientDetailViewModel(int id, IPatientService patientService)
+        public PatientDetailViewModel(int id, IPatientService patientService, INotificationService notificationService)
         {
             _patientService = patientService;
+            _notificationService = notificationService;
             _id = id;
             EditCommand = new Command(StartEdit, () => !IsLoading && !IsEditing);
             SaveCommand = new Command(async () => await SaveAsync(), () => !IsSaving);
             CancelCommand = new Command(CancelEdit, () => IsEditing);
+            CancelRemindersCommand = new Command(
+                async () => await CancelRemindersAsync(),
+                () => HasPendingReminders && !_isCancellingReminders);
             _ = LoadPatientAsync(id);
         }
 
@@ -151,6 +163,34 @@ namespace Medical_atention.ViewModels
         public ICommand EditCommand { get; }
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
+        public ICommand CancelRemindersCommand { get; }
+
+        public int PendingReminderCount
+        {
+            get => _pendingReminderCount;
+            set
+            {
+                _pendingReminderCount = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(HasPendingReminders));
+                OnPropertyChanged(nameof(ReminderInfoText));
+                ((Command)CancelRemindersCommand).ChangeCanExecute();
+            }
+        }
+
+        public bool HasPendingReminders => _pendingReminderCount > 0;
+
+        public string ReminderInfoText => _pendingReminderCount == 1
+            ? "1 recordatorio de seguimiento programado"
+            : $"{_pendingReminderCount} recordatorios de seguimiento programados";
+
+        public string ReminderMessage
+        {
+            get => _reminderMessage;
+            set { _reminderMessage = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasReminderMessage)); }
+        }
+
+        public bool HasReminderMessage => !string.IsNullOrEmpty(_reminderMessage);
 
         private async Task LoadPatientAsync(int id)
         {
@@ -166,6 +206,7 @@ namespace Medical_atention.ViewModels
                 }
 
                 Device.BeginInvokeOnMainThread(() => ApplyPatient(patient));
+                await LoadRemindersAsync();
             }
             catch (Exception)
             {
@@ -174,6 +215,46 @@ namespace Medical_atention.ViewModels
             finally
             {
                 Device.BeginInvokeOnMainThread(() => IsLoading = false);
+            }
+        }
+
+        private async Task LoadRemindersAsync()
+        {
+            try
+            {
+                var count = await _notificationService.GetPendingCountAsync(_id);
+                Device.BeginInvokeOnMainThread(() => PendingReminderCount = count);
+            }
+            catch (Exception)
+            {
+                // Sin recordatorios disponibles; se omite silenciosamente.
+            }
+        }
+
+        private async Task CancelRemindersAsync()
+        {
+            _isCancellingReminders = true;
+            Device.BeginInvokeOnMainThread(() => ((Command)CancelRemindersCommand).ChangeCanExecute());
+            try
+            {
+                var cancelled = await _notificationService.CancelForPatientAsync(_id);
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    PendingReminderCount = 0;
+                    ReminderMessage = cancelled > 0
+                        ? $"{cancelled} recordatorio(s) de seguimiento cancelado(s)"
+                        : "No había recordatorios pendientes";
+                });
+            }
+            catch (Exception)
+            {
+                Device.BeginInvokeOnMainThread(() =>
+                    ReminderMessage = "No se pudieron cancelar los recordatorios");
+            }
+            finally
+            {
+                _isCancellingReminders = false;
+                Device.BeginInvokeOnMainThread(() => ((Command)CancelRemindersCommand).ChangeCanExecute());
             }
         }
 

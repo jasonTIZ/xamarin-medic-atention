@@ -59,6 +59,7 @@
     <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.4" />
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2196" />
     <PackageReference Include="Xamarin.Essentials" Version="1.7.0" />
+    <PackageReference Include="Plugin.LocalNotification" Version="9.2.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />

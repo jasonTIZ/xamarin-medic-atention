@@ -128,6 +128,35 @@
                                FontSize="15" />
                     </Frame>
 
+                    <Frame IsVisible="{Binding HasPendingReminders}"
+                           BorderColor="#F6AD55"
+                           BackgroundColor="#FFFAF0"
+                           CornerRadius="8"
+                           Padding="16,12"
+                           HasShadow="False"
+                           Margin="0,16,0,0">
+                        <StackLayout Spacing="10">
+                            <Label Text="Recordatorios de seguimiento"
+                                   FontSize="13" FontAttributes="Bold"
+                                   TextColor="#C05621" />
+                            <Label Text="{Binding ReminderInfoText}"
+                                   FontSize="14"
+                                   TextColor="#7B341E" />
+                            <Button Text="Cancelar recordatorios"
+                                    Command="{Binding CancelRemindersCommand}"
+                                    BackgroundColor="#DD6B20"
+                                    TextColor="White"
+                                    CornerRadius="8"
+                                    FontAttributes="Bold"
+                                    HeightRequest="44" />
+                        </StackLayout>
+                    </Frame>
+
+                    <Label Text="{Binding ReminderMessage}"
+                           IsVisible="{Binding HasReminderMessage}"
+                           TextColor="#2F855A" FontSize="13"
+                           Margin="0,12,0,0" />
+
                     <Label Text="{Binding ErrorMessage}"
                            TextColor="#E53E3E" FontSize="13"
                            IsVisible="{Binding HasError}"
