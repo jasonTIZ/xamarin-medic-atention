@@ -1,9 +1,13 @@
 using Medical_atention.Constants;
+using Medical_atention.Data;
 using Medical_atention.Models;
 using Medical_atention.Services;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -15,6 +19,12 @@ namespace Medical_atention.ViewModels
     public class RegisterConsultationViewModel : INotifyPropertyChanged
     {
         private readonly IConsultationService _consultationService;
+        private readonly IAttachmentService _attachmentService;
+
+        private readonly List<PendingImage> _pendingImages = new List<PendingImage>();
+        private ObservableCollection<PendingImageItem> _previewImages = new ObservableCollection<PendingImageItem>();
+        private string _attachmentError = string.Empty;
+
         private int _patientId;
         private string _patientName = string.Empty;
         private string _patientCedula = string.Empty;
@@ -34,11 +44,12 @@ namespace Medical_atention.ViewModels
         private bool _isSnackbarVisible;
         private bool _showPendingSync;
 
-        public RegisterConsultationViewModel() : this(new ConsultationService()) { }
+        public RegisterConsultationViewModel() : this(new ConsultationService(), new AttachmentService()) { }
 
-        public RegisterConsultationViewModel(IConsultationService consultationService)
+        public RegisterConsultationViewModel(IConsultationService consultationService, IAttachmentService attachmentService)
         {
             _consultationService = consultationService;
+            _attachmentService = attachmentService;
             var selectPriority = new Command<string>(SelectPriority);
             PriorityOptions = new ObservableCollection<PriorityOptionItem>
             {
@@ -50,6 +61,11 @@ namespace Medical_atention.ViewModels
             SelectPriority("medium");
             RegisterCommand = new Command(async () => await ExecuteRegisterAsync(), () => !_isLoading);
             ToggleEditDateTimeCommand = new Command(ToggleEditDateTime);
+            AddFromGalleryCommand = new Command(async () => await PickImageAsync(fromCamera: false), () => CanAddImage);
+            AddFromCameraCommand = new Command(async () => await PickImageAsync(fromCamera: true), () => CanAddImage);
+            RemoveImageCommand = new Command<PendingImageItem>(RemoveImage);
+            UpdateOfflineIndicator();
+            Connectivity.ConnectivityChanged += (_, __) => UpdateOfflineIndicator();
         }
 
         public string PatientDisplayLine =>
@@ -166,11 +182,30 @@ namespace Medical_atention.ViewModels
             set { _isSnackbarVisible = value; OnPropertyChanged(); }
         }
 
+        public bool ShowOfflineIndicator { get; private set; }
+
         public bool ShowPendingSync
         {
             get => _showPendingSync;
-            set { _showPendingSync = value; OnPropertyChanged(); }
+            set { _showPendingSync = value; OnPropertyChanged(); UpdateOfflineIndicator(); }
         }
+
+        public ObservableCollection<PendingImageItem> PreviewImages
+        {
+            get => _previewImages;
+            private set { _previewImages = value; OnPropertyChanged(); }
+        }
+
+        public string AttachmentError
+        {
+            get => _attachmentError;
+            set { _attachmentError = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasAttachmentError)); }
+        }
+
+        public bool HasAttachmentError => !string.IsNullOrEmpty(_attachmentError);
+        public bool CanAddImage => _pendingImages.Count < 3;
+        public string ImageCountLabel => $"{_pendingImages.Count}/3 imágenes";
+        public bool HasImages => _pendingImages.Count > 0;
 
         public bool HasSymptomsError => !string.IsNullOrEmpty(_symptomsError);
         public bool HasDiagnosisError => !string.IsNullOrEmpty(_diagnosisError);
@@ -178,6 +213,9 @@ namespace Medical_atention.ViewModels
 
         public ICommand RegisterCommand { get; }
         public ICommand ToggleEditDateTimeCommand { get; }
+        public ICommand AddFromGalleryCommand { get; }
+        public ICommand AddFromCameraCommand { get; }
+        public ICommand RemoveImageCommand { get; }
 
         public void Initialize(int patientId, string patientName, string patientCedula = null)
         {
@@ -191,6 +229,68 @@ namespace Medical_atention.ViewModels
         }
 
         private void ToggleEditDateTime() => IsEditingDateTime = !IsEditingDateTime;
+
+        private async Task PickImageAsync(bool fromCamera)
+        {
+            AttachmentError = string.Empty;
+            var (bytes, fileName, error) = await _attachmentService.PickAndCompressAsync(fromCamera);
+
+            if (bytes is null)
+            {
+                if (!string.IsNullOrEmpty(error)) AttachmentError = error;
+                return;
+            }
+
+            var preview = new PendingImageItem
+            {
+                FileName = fileName,
+                Source = ImageSource.FromStream(() => new MemoryStream(bytes))
+            };
+
+            _pendingImages.Add(new PendingImage { Bytes = bytes, FileName = fileName });
+            PreviewImages.Add(preview);
+
+            OnPropertyChanged(nameof(CanAddImage));
+            OnPropertyChanged(nameof(ImageCountLabel));
+            OnPropertyChanged(nameof(HasImages));
+            ((Command)AddFromGalleryCommand).ChangeCanExecute();
+            ((Command)AddFromCameraCommand).ChangeCanExecute();
+        }
+
+        private void RemoveImage(PendingImageItem item)
+        {
+            if (item is null) return;
+            var idx = PreviewImages.IndexOf(item);
+            if (idx < 0) return;
+
+            PreviewImages.RemoveAt(idx);
+            if (idx < _pendingImages.Count)
+                _pendingImages.RemoveAt(idx);
+
+            OnPropertyChanged(nameof(CanAddImage));
+            OnPropertyChanged(nameof(ImageCountLabel));
+            OnPropertyChanged(nameof(HasImages));
+            ((Command)AddFromGalleryCommand).ChangeCanExecute();
+            ((Command)AddFromCameraCommand).ChangeCanExecute();
+        }
+
+        private async Task UploadPendingImagesAsync(int localId, int? serverId, string token)
+        {
+            foreach (var img in _pendingImages)
+            {
+                try
+                {
+                    await _attachmentService.AddBytesAsync(localId, serverId, img.Bytes, img.FileName, token, null);
+                }
+                catch (Exception) { }
+            }
+        }
+
+        private void UpdateOfflineIndicator()
+        {
+            ShowOfflineIndicator = Connectivity.NetworkAccess != NetworkAccess.Internet || _showPendingSync;
+            OnPropertyChanged(nameof(ShowOfflineIndicator));
+        }
 
         private void SelectPriority(string priority)
         {
@@ -247,6 +347,15 @@ namespace Medical_atention.ViewModels
                     return;
                 }
 
+                if (_pendingImages.Count > 0)
+                {
+                    var token2 = await SecureStorage.GetAsync(AppConstants.TokenKey);
+                    var serverId = result.Consultation?.Id;
+                    var recent = (await LocalDatabase.Instance.GetConsultationsByPatientAsync(_patientId)).FirstOrDefault();
+                    var localId = recent?.LocalId ?? 0;
+                    _ = UploadPendingImagesAsync(localId, serverId, token2);
+                }
+
                 if (result.SavedOffline)
                 {
                     ShowPendingSync = true;
@@ -279,5 +388,17 @@ namespace Medical_atention.ViewModels
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        private class PendingImage
+        {
+            public byte[] Bytes { get; set; }
+            public string FileName { get; set; }
+        }
+    }
+
+    public class PendingImageItem
+    {
+        public string FileName { get; set; }
+        public ImageSource Source { get; set; }
     }
 }

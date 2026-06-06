@@ -1,6 +1,8 @@
 using MedicalAtention.API.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -8,6 +10,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.Configure<FormOptions>(o =>
+{
+    o.MultipartBodyLengthLimit = 16 * 1024 * 1024; // 16 MB max request
+});
 
 builder.Services.AddDbContext<AppDbContext>(o =>
     o.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -49,6 +55,15 @@ using (var scope = app.Services.CreateScope())
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 app.UseCors();
+
+var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
+Directory.CreateDirectory(uploadsPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

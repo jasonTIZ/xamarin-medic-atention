@@ -109,6 +109,130 @@
                            IsVisible="{Binding HasError}"
                            Margin="0,8,0,0" />
 
+                    <!-- ── Imágenes adjuntas ── -->
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,20,0,6">
+                        <Label Grid.Column="0"
+                               Text="Imágenes adjuntas"
+                               FontSize="13" FontAttributes="Bold"
+                               TextColor="#4A5568"
+                               VerticalOptions="Center" />
+                        <Label Grid.Column="1"
+                               Text="{Binding AttachmentCountLabel}"
+                               FontSize="12"
+                               TextColor="#718096"
+                               VerticalOptions="Center" />
+                    </Grid>
+
+                    <ActivityIndicator IsRunning="{Binding IsLoadingAttachments}"
+                                       IsVisible="{Binding IsLoadingAttachments}"
+                                       Color="#2C7BE5"
+                                       HeightRequest="32"
+                                       Margin="0,4,0,4" />
+
+                    <!-- Miniaturas -->
+                    <CollectionView ItemsSource="{Binding Attachments}"
+                                    IsVisible="{Binding HasAttachments}"
+                                    HeightRequest="110"
+                                    ItemsLayout="HorizontalList"
+                                    Margin="0,0,0,8">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid WidthRequest="96" HeightRequest="96" Margin="0,4,8,4">
+
+                                    <!-- Miniatura -->
+                                    <Frame CornerRadius="8" Padding="0"
+                                           IsClippedToBounds="True"
+                                           HasShadow="False"
+                                           BorderColor="#CBD5E0">
+                                        <Image Source="{Binding ThumbnailSource}"
+                                               Aspect="AspectFill"
+                                               WidthRequest="96"
+                                               HeightRequest="96">
+                                            <Image.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.OpenViewerCommand}"
+                                                    CommandParameter="{Binding .}" />
+                                            </Image.GestureRecognizers>
+                                        </Image>
+                                    </Frame>
+
+                                    <!-- Barra de progreso -->
+                                    <StackLayout IsVisible="{Binding ShowProgress}"
+                                                 VerticalOptions="End"
+                                                 BackgroundColor="#CC000000"
+                                                 Padding="6,4">
+                                        <ProgressBar Progress="{Binding UploadProgress}"
+                                                     ProgressColor="#2C7BE5"
+                                                     HeightRequest="4" />
+                                        <Label Text="{Binding UploadProgressText}"
+                                               TextColor="White"
+                                               FontSize="10"
+                                               HorizontalOptions="Center" />
+                                    </StackLayout>
+
+                                    <!-- Pending sync badge -->
+                                    <Frame IsVisible="{Binding PendingSync}"
+                                           CornerRadius="6"
+                                           Padding="4,2"
+                                           BackgroundColor="#F6AD55"
+                                           HasShadow="False"
+                                           HorizontalOptions="Start"
+                                           VerticalOptions="Start"
+                                           Margin="4">
+                                        <Label Text="Offline" FontSize="9" TextColor="White" />
+                                    </Frame>
+
+                                    <!-- Botón eliminar -->
+                                    <Button Text="&#x2715;"
+                                            TextColor="White"
+                                            BackgroundColor="#CC000000"
+                                            FontSize="14"
+                                            CornerRadius="12"
+                                            WidthRequest="24"
+                                            HeightRequest="24"
+                                            Padding="0"
+                                            HorizontalOptions="End"
+                                            VerticalOptions="Start"
+                                            Margin="0,4,4,0"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteAttachmentCommand}"
+                                            CommandParameter="{Binding .}" />
+
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <!-- Botones agregar foto -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8"
+                          IsVisible="{Binding CanAddAttachment}"
+                          Margin="0,0,0,4">
+                        <Button Grid.Column="0"
+                                Text="&#x1F4F7; Cámara"
+                                Command="{Binding AddFromCameraCommand}"
+                                BackgroundColor="#EBF8FF"
+                                TextColor="#2C7BE5"
+                                BorderColor="#BEE3F8"
+                                BorderWidth="1"
+                                CornerRadius="8"
+                                FontSize="13"
+                                HeightRequest="40" />
+                        <Button Grid.Column="1"
+                                Text="&#x1F5BC; Galería"
+                                Command="{Binding AddFromGalleryCommand}"
+                                BackgroundColor="#EBF8FF"
+                                TextColor="#2C7BE5"
+                                BorderColor="#BEE3F8"
+                                BorderWidth="1"
+                                CornerRadius="8"
+                                FontSize="13"
+                                HeightRequest="40" />
+                    </Grid>
+
+                    <Label Text="{Binding AttachmentError}"
+                           TextColor="#E53E3E" FontSize="12"
+                           IsVisible="{Binding HasAttachmentError}"
+                           Margin="0,4,0,0" />
+
                 </StackLayout>
 
             </StackLayout>

@@ -2,8 +2,10 @@ using Medical_atention.Constants;
 using Medical_atention.Models;
 using Medical_atention.Services;
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -15,6 +17,7 @@ namespace Medical_atention.ViewModels
     public class ConsultationDetailViewModel : INotifyPropertyChanged
     {
         private readonly IConsultationService _consultationService;
+        private readonly IAttachmentService _attachmentService;
         private static readonly CultureInfo EsCulture = CreateSpanishCulture();
 
         private int? _serverId;
@@ -32,14 +35,24 @@ namespace Medical_atention.ViewModels
         private bool _isSaving;
         private string _errorMessage = string.Empty;
 
-        public ConsultationDetailViewModel() : this(new ConsultationService()) { }
+        private ObservableCollection<AttachmentItem> _attachments = new ObservableCollection<AttachmentItem>();
+        private bool _isLoadingAttachments;
+        private string _attachmentError = string.Empty;
 
-        public ConsultationDetailViewModel(IConsultationService consultationService)
+        public ConsultationDetailViewModel() : this(new ConsultationService(), new AttachmentService()) { }
+
+        public ConsultationDetailViewModel(IConsultationService consultationService, IAttachmentService attachmentService)
         {
             _consultationService = consultationService;
+            _attachmentService = attachmentService;
             EditCommand = new Command(StartEdit, () => !IsLoading && !IsEditing);
             SaveCommand = new Command(async () => await SaveAsync(), () => !IsSaving);
             CancelCommand = new Command(CancelEdit, () => IsEditing);
+            AddFromGalleryCommand = new Command(async () => await AddAttachmentAsync(fromCamera: false), () => CanAddAttachment);
+            AddFromCameraCommand = new Command(async () => await AddAttachmentAsync(fromCamera: true), () => CanAddAttachment);
+            DeleteAttachmentCommand = new Command<AttachmentItem>(async item => await DeleteAttachmentAsync(item));
+            OpenViewerCommand = new Command<AttachmentItem>(OpenViewer);
+            SaveAttachmentToGalleryCommand = new Command<AttachmentItem>(async item => await SaveAttachmentToGalleryAsync(item));
         }
 
         private static CultureInfo CreateSpanishCulture()
@@ -143,9 +156,37 @@ namespace Medical_atention.ViewModels
 
         public bool HasError => !string.IsNullOrEmpty(_errorMessage);
 
+        public ObservableCollection<AttachmentItem> Attachments
+        {
+            get => _attachments;
+            set { _attachments = value; OnPropertyChanged(); OnPropertyChanged(nameof(CanAddAttachment)); OnPropertyChanged(nameof(AttachmentCountLabel)); }
+        }
+
+        public bool IsLoadingAttachments
+        {
+            get => _isLoadingAttachments;
+            set { _isLoadingAttachments = value; OnPropertyChanged(); }
+        }
+
+        public string AttachmentError
+        {
+            get => _attachmentError;
+            set { _attachmentError = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasAttachmentError)); }
+        }
+
+        public bool HasAttachmentError => !string.IsNullOrEmpty(_attachmentError);
+        public bool CanAddAttachment => _attachments.Count < 3;
+        public string AttachmentCountLabel => $"{_attachments.Count}/3 imágenes";
+        public bool HasAttachments => _attachments.Count > 0;
+
         public ICommand EditCommand { get; }
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
+        public ICommand AddFromGalleryCommand { get; }
+        public ICommand AddFromCameraCommand { get; }
+        public ICommand DeleteAttachmentCommand { get; }
+        public ICommand OpenViewerCommand { get; }
+        public ICommand SaveAttachmentToGalleryCommand { get; }
 
         public async Task LoadAsync(int? serverId, int localId)
         {
@@ -156,8 +197,8 @@ namespace Medical_atention.ViewModels
             ErrorMessage = string.Empty;
             try
             {
-                var detail = await _consultationService.GetDetailAsync(
-                    _serverId, _localId, await SecureStorage.GetAsync(AppConstants.TokenKey));
+                var token = await SecureStorage.GetAsync(AppConstants.TokenKey);
+                var detail = await _consultationService.GetDetailAsync(_serverId, _localId, token);
 
                 if (detail is null)
                 {
@@ -166,6 +207,7 @@ namespace Medical_atention.ViewModels
                 }
 
                 ApplyDetail(detail);
+                _ = LoadAttachmentsAsync(token);
             }
             catch (Exception)
             {
@@ -175,6 +217,104 @@ namespace Medical_atention.ViewModels
             {
                 IsLoading = false;
             }
+        }
+
+        private async Task LoadAttachmentsAsync(string token)
+        {
+            IsLoadingAttachments = true;
+            AttachmentError = string.Empty;
+            try
+            {
+                var list = await _attachmentService.LoadForConsultationAsync(_localId, _serverId, token);
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    Attachments = new ObservableCollection<AttachmentItem>(list);
+                    OnPropertyChanged(nameof(HasAttachments));
+                    OnPropertyChanged(nameof(CanAddAttachment));
+                    OnPropertyChanged(nameof(AttachmentCountLabel));
+                    RefreshAttachmentCommands();
+                });
+            }
+            catch (Exception)
+            {
+                AttachmentError = "No se pudieron cargar las imágenes";
+            }
+            finally
+            {
+                IsLoadingAttachments = false;
+            }
+        }
+
+        private async Task AddAttachmentAsync(bool fromCamera)
+        {
+            if (!CanAddAttachment) return;
+            AttachmentError = string.Empty;
+
+            var token = await SecureStorage.GetAsync(AppConstants.TokenKey);
+            var progress = new Progress<double>(p =>
+            {
+                var uploading = _attachments.FirstOrDefault(a => a.IsUploading);
+                if (uploading != null) uploading.UploadProgress = p;
+            });
+
+            var (item, error) = fromCamera
+                ? await _attachmentService.AddFromCameraAsync(_localId, _serverId, token, progress)
+                : await _attachmentService.AddFromGalleryAsync(_localId, _serverId, token, progress);
+
+            if (item is null)
+            {
+                if (!string.IsNullOrEmpty(error)) AttachmentError = error;
+                return;
+            }
+
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                Attachments.Add(item);
+                OnPropertyChanged(nameof(HasAttachments));
+                OnPropertyChanged(nameof(CanAddAttachment));
+                OnPropertyChanged(nameof(AttachmentCountLabel));
+                RefreshAttachmentCommands();
+            });
+        }
+
+        private async Task DeleteAttachmentAsync(AttachmentItem item)
+        {
+            if (item is null) return;
+            var token = await SecureStorage.GetAsync(AppConstants.TokenKey);
+            var error = await _attachmentService.DeleteAsync(item, token);
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                AttachmentError = error;
+                return;
+            }
+
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                Attachments.Remove(item);
+                OnPropertyChanged(nameof(HasAttachments));
+                OnPropertyChanged(nameof(CanAddAttachment));
+                OnPropertyChanged(nameof(AttachmentCountLabel));
+                RefreshAttachmentCommands();
+            });
+        }
+
+        private static void OpenViewer(AttachmentItem item)
+        {
+            if (item is null) return;
+            Shell.Current.GoToAsync($"ImageViewerPage?localId={item.LocalId}");
+        }
+
+        private async Task SaveAttachmentToGalleryAsync(AttachmentItem item)
+        {
+            var error = await _attachmentService.SaveToGalleryAsync(item);
+            if (!string.IsNullOrEmpty(error)) AttachmentError = error;
+        }
+
+        private void RefreshAttachmentCommands()
+        {
+            ((Command)AddFromGalleryCommand).ChangeCanExecute();
+            ((Command)AddFromCameraCommand).ChangeCanExecute();
         }
 
         private void ApplyDetail(ConsultationResponseDto detail)
