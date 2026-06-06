@@ -19,8 +19,9 @@ namespace Medical_atention.Droid.Renderers
 
     public class CustomShellBottomNavViewAppearanceTracker : ShellBottomNavViewAppearanceTracker
     {
-        static readonly Android.Graphics.Color SelectedColor = Android.Graphics.Color.ParseColor("#2196F3");
-        static readonly Android.Graphics.Color UnselectedColor = Android.Graphics.Color.ParseColor("#757575");
+        const int SelectedColorArgb = unchecked((int)0xFF2196F3);
+        const int UnselectedColorArgb = unchecked((int)0xFF757575);
+
         static readonly ColorStateList ItemColorStateList = CreateItemColorStateList();
 
         public CustomShellBottomNavViewAppearanceTracker(IShellContext shellContext, ShellItem shellItem)
@@ -36,13 +37,13 @@ namespace Medical_atention.Droid.Renderers
 
         static ColorStateList CreateItemColorStateList()
         {
-            var states = new[]
+            int[][] states =
             {
                 new[] { global::Android.Resource.Attribute.StateChecked },
                 new[] { -global::Android.Resource.Attribute.StateChecked }
             };
 
-            var colors = new[] { SelectedColor, UnselectedColor };
+            int[] colors = { SelectedColorArgb, UnselectedColorArgb };
             return new ColorStateList(states, colors);
         }
     }
