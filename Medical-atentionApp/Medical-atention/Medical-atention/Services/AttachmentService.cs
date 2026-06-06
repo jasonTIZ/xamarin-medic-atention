@@ -94,6 +94,13 @@ namespace Medical_atention.Services
 
         public async Task<(byte[] compressed, string fileName, string error)> PickAndCompressAsync(bool fromCamera)
         {
+            if (fromCamera)
+            {
+                var status = await Permissions.RequestAsync<Permissions.Camera>();
+                if (status != PermissionStatus.Granted)
+                    return (null, null, "Se requiere permiso de cámara");
+            }
+
             FileResult file;
             try
             {
@@ -102,9 +109,9 @@ namespace Medical_atention.Services
                     : await MediaPicker.PickPhotoAsync(new MediaPickerOptions { Title = "Seleccionar imagen" });
                 if (file is null) return (null, null, null);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return (null, null, "No se pudo acceder a la cámara o galería");
+                return (null, null, ex.Message);
             }
 
             try
@@ -213,9 +220,9 @@ namespace Medical_atention.Services
                 file = await picker();
                 if (file is null) return (null, null);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return (null, "No se pudo acceder a la cámara o galería");
+                return (null, ex.Message);
             }
 
             try

@@ -398,11 +398,9 @@ namespace Medical_atention.ViewModels
         }
     }
 
-    public class PendingImageItem : INotifyPropertyChanged
+    public class PendingImageItem
     {
         public string FileName { get; set; }
         public ImageSource Source { get; set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }
