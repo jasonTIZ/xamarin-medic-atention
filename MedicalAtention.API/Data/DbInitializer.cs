@@ -10,6 +10,7 @@ public static class DbInitializer
     {
         EnsureConsultationsTable(context);
         EnsurePatientPriorityColumns(context);
+        EnsureDevicesTable(context);
 
         if (context.Users.Any()) return;
 
@@ -96,6 +97,21 @@ public static class DbInitializer
         );
 
         context.SaveChanges();
+    }
+
+    private static void EnsureDevicesTable(AppDbContext context)
+    {
+        context.Database.ExecuteSqlRaw(@"
+            CREATE TABLE IF NOT EXISTS Devices (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Token TEXT NOT NULL,
+                Platform TEXT NOT NULL DEFAULT '',
+                UserId INTEGER NOT NULL DEFAULT 0,
+                CreatedAt TEXT NOT NULL,
+                UpdatedAt TEXT NULL
+            );");
+        context.Database.ExecuteSqlRaw(
+            "CREATE UNIQUE INDEX IF NOT EXISTS IX_Devices_Token ON Devices (Token);");
     }
 
     private static void EnsureConsultationsTable(AppDbContext context)

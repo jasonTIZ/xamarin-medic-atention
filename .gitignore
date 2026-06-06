@@ -106,3 +106,7 @@ apk-triaje/
 # Archivos de prueba HTTP de Visual Studio
 # (comenta esta línea si quieres trackearlos)
 # *.http
+
+# Configuración de Firebase (contiene IDs del proyecto; cada quien usa la suya)
+google-services.json
+GoogleService-Info.plist

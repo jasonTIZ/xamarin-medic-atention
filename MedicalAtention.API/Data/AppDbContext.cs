@@ -8,6 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<User> Users { get; set; }
     public DbSet<Patient> Patients { get; set; }
     public DbSet<Consultation> Consultations { get; set; }
+    public DbSet<Device> Devices { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,6 +23,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<Patient>()
             .HasIndex(p => p.IdentificationNumber)
+            .IsUnique();
+
+        modelBuilder.Entity<Device>()
+            .HasIndex(d => d.Token)
             .IsUnique();
 
         modelBuilder.Entity<Consultation>()
