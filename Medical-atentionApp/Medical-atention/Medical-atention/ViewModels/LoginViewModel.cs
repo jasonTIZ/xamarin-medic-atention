@@ -118,6 +118,9 @@ namespace Medical_atention.ViewModels
                 {
                     Application.Current.MainPage = new Views.AppShell();
                 });
+
+                // Con la sesión ya creada, registra el token push del dispositivo en el backend.
+                _ = Services.PushNotificationService.Instance.RegisterPendingTokenAsync();
             }
             catch (Exception)
             {
