@@ -106,6 +106,11 @@ namespace Medical_atention.Droid
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+
+        protected override void OnActivityResult(int requestCode, Android.App.Result resultCode, Android.Content.Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+        }
     }
 
     // Listener para el resultado asíncrono de FirebaseMessaging.GetToken().

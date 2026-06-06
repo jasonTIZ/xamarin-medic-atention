@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Medical_atention.Views.ImageViewerPage"
+             BackgroundColor="Black"
+             Shell.NavBarIsVisible="False">
+
+    <Grid>
+
+        <!-- Imagen con zoom -->
+        <ScrollView x:Name="ScrollContainer"
+                    HorizontalScrollBarVisibility="Never"
+                    VerticalScrollBarVisibility="Never">
+            <Image x:Name="ViewerImage"
+                   Aspect="AspectFit"
+                   HorizontalOptions="FillAndExpand"
+                   VerticalOptions="FillAndExpand">
+                <Image.GestureRecognizers>
+                    <PinchGestureRecognizer PinchUpdated="OnPinchUpdated" />
+                    <TapGestureRecognizer NumberOfTapsRequired="2" Tapped="OnDoubleTap" />
+                </Image.GestureRecognizers>
+            </Image>
+        </ScrollView>
+
+        <!-- Placeholder de error -->
+        <StackLayout x:Name="ErrorView"
+                     IsVisible="False"
+                     HorizontalOptions="Center"
+                     VerticalOptions="Center"
+                     Spacing="12">
+            <Label Text="&#x1F5BC;"
+                   FontSize="48"
+                   HorizontalOptions="Center" />
+            <Label Text="No se pudo cargar la imagen"
+                   TextColor="#A0AEC0"
+                   FontSize="15"
+                   HorizontalOptions="Center" />
+        </StackLayout>
+
+        <!-- ActivityIndicator de carga -->
+        <ActivityIndicator x:Name="LoadingIndicator"
+                           Color="White"
+                           IsRunning="True"
+                           IsVisible="True"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+        <!-- Barra superior -->
+        <StackLayout VerticalOptions="Start"
+                     HorizontalOptions="FillAndExpand"
+                     Padding="16,44,16,12"
+                     BackgroundColor="#88000000">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <Button Grid.Column="0"
+                        Text="&#x2190;"
+                        TextColor="White"
+                        BackgroundColor="Transparent"
+                        FontSize="22"
+                        Padding="0"
+                        WidthRequest="44"
+                        HeightRequest="44"
+                        Clicked="OnBackClicked" />
+
+                <Label Grid.Column="1"
+                       x:Name="FileNameLabel"
+                       TextColor="White"
+                       FontSize="14"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Center"
+                       LineBreakMode="MiddleTruncation" />
+
+                <Button Grid.Column="2"
+                        Text="&#x2B73;"
+                        TextColor="White"
+                        BackgroundColor="Transparent"
+                        FontSize="20"
+                        Padding="0"
+                        WidthRequest="44"
+                        HeightRequest="44"
+                        Clicked="OnDownloadClicked" />
+            </Grid>
+        </StackLayout>
+
+    </Grid>
+
+</ContentPage>
