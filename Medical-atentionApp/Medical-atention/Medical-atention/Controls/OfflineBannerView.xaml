@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Medical_atention.Controls.OfflineBannerView"
+             x:Name="Root"
+             IsVisible="False"
+             Opacity="0">
+
+    <Frame x:Name="BannerFrame"
+           BackgroundColor="#FFF5F5"
+           BorderColor="#FC8181"
+           CornerRadius="0"
+           Padding="12,10"
+           HasShadow="False"
+           Margin="0">
+        <StackLayout Orientation="Horizontal"
+                     Spacing="10"
+                     HorizontalOptions="Center"
+                     VerticalOptions="Center">
+            <Label Text="⚠"
+                   FontSize="16"
+                   TextColor="#C53030"
+                   VerticalOptions="Center" />
+            <StackLayout Spacing="2" VerticalOptions="Center">
+                <Label x:Name="TitleLabel"
+                       Text="Sin conexión — datos locales"
+                       FontSize="13"
+                       FontAttributes="Bold"
+                       TextColor="#C53030"
+                       HorizontalTextAlignment="Center" />
+                <Label x:Name="SyncLabel"
+                       FontSize="11"
+                       TextColor="#9B2C2C"
+                       HorizontalTextAlignment="Center"
+                       IsVisible="False" />
+            </StackLayout>
+        </StackLayout>
+    </Frame>
+
+</ContentView>

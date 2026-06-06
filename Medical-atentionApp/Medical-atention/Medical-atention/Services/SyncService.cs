@@ -45,6 +45,7 @@ namespace Medical_atention.Services
 
             if (synced > 0)
             {
+                await LastSyncHelper.RecordPatientSyncAsync();
                 LocalDataChangedHelper.NotifyPatientsChanged();
                 SyncNotificationHelper.NotifyCompleted(synced);
             }

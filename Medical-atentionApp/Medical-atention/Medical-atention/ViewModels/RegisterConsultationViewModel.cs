@@ -50,8 +50,6 @@ namespace Medical_atention.ViewModels
             SelectPriority("medium");
             RegisterCommand = new Command(async () => await ExecuteRegisterAsync(), () => !_isLoading);
             ToggleEditDateTimeCommand = new Command(ToggleEditDateTime);
-            UpdateOfflineIndicator();
-            Connectivity.ConnectivityChanged += (_, __) => UpdateOfflineIndicator();
         }
 
         public string PatientDisplayLine =>
@@ -73,8 +71,6 @@ namespace Medical_atention.ViewModels
         }
 
         public bool IsDateTimeReadOnly => !_isEditingDateTime;
-
-        public bool ShowOfflineIndicator { get; private set; }
 
         public ObservableCollection<PriorityOptionItem> PriorityOptions { get; }
 
@@ -173,7 +169,7 @@ namespace Medical_atention.ViewModels
         public bool ShowPendingSync
         {
             get => _showPendingSync;
-            set { _showPendingSync = value; OnPropertyChanged(); UpdateOfflineIndicator(); }
+            set { _showPendingSync = value; OnPropertyChanged(); }
         }
 
         public bool HasSymptomsError => !string.IsNullOrEmpty(_symptomsError);
@@ -192,16 +188,9 @@ namespace Medical_atention.ViewModels
             ConsultationDate = DateTime.Today;
             ConsultationTime = DateTime.Now.TimeOfDay;
             IsEditingDateTime = false;
-            UpdateOfflineIndicator();
         }
 
         private void ToggleEditDateTime() => IsEditingDateTime = !IsEditingDateTime;
-
-        private void UpdateOfflineIndicator()
-        {
-            ShowOfflineIndicator = Connectivity.NetworkAccess != NetworkAccess.Internet || _showPendingSync;
-            OnPropertyChanged(nameof(ShowOfflineIndicator));
-        }
 
         private void SelectPriority(string priority)
         {
@@ -261,7 +250,6 @@ namespace Medical_atention.ViewModels
                 if (result.SavedOffline)
                 {
                     ShowPendingSync = true;
-                    UpdateOfflineIndicator();
                     SnackbarMessage = "Consulta guardada localmente. Pendiente de sincronización.";
                 }
                 else

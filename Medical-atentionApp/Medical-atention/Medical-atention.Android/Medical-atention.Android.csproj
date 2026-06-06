@@ -59,11 +59,11 @@
     <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.4" />
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2196" />
     <PackageReference Include="Xamarin.Essentials" Version="1.7.0" />
-    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.4" />
     <PackageReference Include="Plugin.LocalNotification" Version="9.2.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
+    <Compile Include="Renderers\CustomShellRenderer.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -75,6 +75,9 @@
   <ItemGroup>
     <AndroidResource Include="Resources\values\styles.xml" />
     <AndroidResource Include="Resources\values\colors.xml" />
+    <AndroidResource Include="Resources\drawable\tab_patients.xml" />
+    <AndroidResource Include="Resources\drawable\tab_triage.xml" />
+    <AndroidResource Include="Resources\drawable\tab_profile.xml" />
     <AndroidResource Include="Resources\mipmap-anydpi-v26\icon.xml" />
     <AndroidResource Include="Resources\mipmap-anydpi-v26\icon_round.xml" />
     <AndroidResource Include="Resources\mipmap-hdpi\icon.png" />
