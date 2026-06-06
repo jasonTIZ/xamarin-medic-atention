@@ -182,10 +182,12 @@ namespace Medical_atention.ViewModels
             set { _isSnackbarVisible = value; OnPropertyChanged(); }
         }
 
+        public bool ShowOfflineIndicator { get; private set; }
+
         public bool ShowPendingSync
         {
             get => _showPendingSync;
-            set { _showPendingSync = value; OnPropertyChanged(); }
+            set { _showPendingSync = value; OnPropertyChanged(); UpdateOfflineIndicator(); }
         }
 
         public ObservableCollection<PendingImageItem> PreviewImages
