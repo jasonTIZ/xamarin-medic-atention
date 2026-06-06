@@ -20,13 +20,22 @@ namespace Medical_atention.Services
         private static readonly HttpClient _client = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
         private readonly LocalDatabase _localDb;
         private readonly IPatientRepository _patientRepository;
+        private readonly INotificationService _notificationService;
 
-        public ConsultationService() : this(LocalDatabase.Instance, new PatientRepository()) { }
+        public ConsultationService()
+            : this(LocalDatabase.Instance, new PatientRepository(), new NotificationService()) { }
 
         public ConsultationService(LocalDatabase localDb, IPatientRepository patientRepository)
+            : this(localDb, patientRepository, new NotificationService()) { }
+
+        public ConsultationService(
+            LocalDatabase localDb,
+            IPatientRepository patientRepository,
+            INotificationService notificationService)
         {
             _localDb = localDb;
             _patientRepository = patientRepository;
+            _notificationService = notificationService;
         }
 
         public async Task<RegisterConsultationResult> RegisterAsync(ConsultationRequestDto request, string token)
@@ -51,6 +60,7 @@ namespace Medical_atention.Services
                             consultation.PatientId,
                             consultation.ConsultationDate,
                             consultation.Priority);
+                        await TryScheduleUrgentFollowUpAsync(request);
                         return new RegisterConsultationResult
                         {
                             Success = true,
@@ -70,11 +80,41 @@ namespace Medical_atention.Services
                 request.PatientId,
                 request.ConsultationDate,
                 request.Priority);
+            await TryScheduleUrgentFollowUpAsync(request);
             return new RegisterConsultationResult
             {
                 Success = true,
                 SavedOffline = true
             };
+        }
+
+        // Recordatorio de seguimiento: solo para consultas urgentes, a 24 horas.
+        // Muestra el nombre del paciente y el motivo (diagnóstico, o síntomas como respaldo).
+        private async Task TryScheduleUrgentFollowUpAsync(ConsultationRequestDto request)
+        {
+            if (!string.Equals(request.Priority, "urgent", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            try
+            {
+                var patient = await _patientRepository.GetByIdAsync(request.PatientId);
+                var patientName = patient != null
+                    ? $"{patient.FirstName} {patient.LastName}".Trim()
+                    : $"Paciente #{request.PatientId}";
+
+                var reason = !string.IsNullOrWhiteSpace(request.Diagnosis)
+                    ? request.Diagnosis
+                    : !string.IsNullOrWhiteSpace(request.Symptoms)
+                        ? request.Symptoms
+                        : "Consulta urgente";
+
+                await _notificationService.ScheduleFollowUpAsync(
+                    request.PatientId, patientName, reason, DateTime.Now.AddHours(24));
+            }
+            catch (Exception)
+            {
+                // No interrumpir el registro de la consulta si falla la programación.
+            }
         }
 
         private async Task ApplyConsultationPriorityToPatientAsync(
