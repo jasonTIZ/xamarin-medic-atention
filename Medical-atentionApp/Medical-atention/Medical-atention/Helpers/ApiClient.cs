@@ -11,9 +11,10 @@ namespace Medical_atention.Helpers
     {
         public static async Task<HttpClient> CreateAsync()
         {
+            var baseUrl = await ApiBaseUrlResolver.ResolveAsync();
             var client = new HttpClient
             {
-                BaseAddress = new Uri(AppConstants.ApiBaseUrl.TrimEnd('/') + "/"),
+                BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/"),
                 Timeout = TimeSpan.FromSeconds(15)
             };
 

@@ -24,15 +24,12 @@ namespace Medical_atention.ViewModels
         private List<PriorityPoint> _priorityEvolution = new List<PriorityPoint>();
         private bool _isLoading;
         private bool _isError;
-        private bool _showOfflineIndicator;
 
         public PatientHistoryViewModel() : this(new PatientService()) { }
 
         public PatientHistoryViewModel(IPatientService patientService)
         {
             _patientService = patientService;
-            UpdateOfflineIndicator();
-            Connectivity.ConnectivityChanged += (_, __) => UpdateOfflineIndicator();
         }
 
         public int PatientId => _patientId;
@@ -86,12 +83,6 @@ namespace Medical_atention.ViewModels
             set { _isError = value; OnPropertyChanged(); }
         }
 
-        public bool ShowOfflineIndicator
-        {
-            get => _showOfflineIndicator;
-            private set { _showOfflineIndicator = value; OnPropertyChanged(); }
-        }
-
         public bool HasPriority => !string.IsNullOrWhiteSpace(_currentPriority);
 
         public void Initialize(int patientId, string patientName)
@@ -132,12 +123,8 @@ namespace Medical_atention.ViewModels
             finally
             {
                 IsLoading = false;
-                UpdateOfflineIndicator();
             }
         }
-
-        private void UpdateOfflineIndicator()
-            => ShowOfflineIndicator = Connectivity.NetworkAccess != NetworkAccess.Internet;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

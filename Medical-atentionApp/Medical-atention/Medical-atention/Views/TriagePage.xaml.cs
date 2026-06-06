@@ -31,6 +31,7 @@ namespace Medical_atention.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+            OfflineBanner?.Refresh();
             _viewModel.StartAutoRefresh();
             await _viewModel.LoadAsync();
             StartRefreshTimer();

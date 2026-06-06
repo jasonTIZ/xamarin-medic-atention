@@ -13,6 +13,12 @@ namespace Medical_atention.Views
             InitializeComponent();
         }
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            OfflineBanner?.Refresh();
+        }
+
         public string PatientId
         {
             set

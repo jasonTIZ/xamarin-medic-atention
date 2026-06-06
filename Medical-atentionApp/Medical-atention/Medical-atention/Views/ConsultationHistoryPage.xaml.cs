@@ -57,6 +57,7 @@ namespace Medical_atention.Views
         protected override void OnAppearing()
         {
             base.OnAppearing();
+            OfflineBanner?.Refresh();
             if (_patientId > 0)
                 _ = _viewModel.LoadAsync();
         }
