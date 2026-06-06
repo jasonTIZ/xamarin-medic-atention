@@ -19,6 +19,12 @@ namespace Medical_atention.Views
             BindingContext = _viewModel;
         }
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            OfflineBanner?.Refresh();
+        }
+
         public string ConsultationId
         {
             set

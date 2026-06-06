@@ -6,8 +6,10 @@
              BackgroundColor="#F0F4F8"
              Title="Detalle de consulta">
 
-    <Grid RowDefinitions="*,Auto">
-        <ScrollView Grid.Row="0">
+    <Grid RowDefinitions="Auto,*,Auto">
+        <controls:OfflineBannerView x:Name="OfflineBanner" Grid.Row="0" />
+
+        <ScrollView Grid.Row="1">
             <StackLayout Padding="24,20,24,16" Spacing="0">
 
                 <ActivityIndicator IsRunning="{Binding IsLoading}"
@@ -236,7 +238,7 @@
             </StackLayout>
         </ScrollView>
 
-        <StackLayout Grid.Row="1"
+        <StackLayout Grid.Row="2"
                      Padding="24,8,24,24"
                      IsVisible="{Binding IsNotLoading}"
                      Spacing="8">

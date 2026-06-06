@@ -88,8 +88,6 @@ namespace Medical_atention.ViewModels
 
         public bool IsDateTimeReadOnly => !_isEditingDateTime;
 
-        public bool ShowOfflineIndicator { get; private set; }
-
         public ObservableCollection<PriorityOptionItem> PriorityOptions { get; }
 
         public string PatientName
@@ -187,7 +185,7 @@ namespace Medical_atention.ViewModels
         public bool ShowPendingSync
         {
             get => _showPendingSync;
-            set { _showPendingSync = value; OnPropertyChanged(); UpdateOfflineIndicator(); }
+            set { _showPendingSync = value; OnPropertyChanged(); }
         }
 
         public ObservableCollection<PendingImageItem> PreviewImages
@@ -226,7 +224,6 @@ namespace Medical_atention.ViewModels
             ConsultationDate = DateTime.Today;
             ConsultationTime = DateTime.Now.TimeOfDay;
             IsEditingDateTime = false;
-            UpdateOfflineIndicator();
         }
 
         private void ToggleEditDateTime() => IsEditingDateTime = !IsEditingDateTime;
@@ -360,7 +357,6 @@ namespace Medical_atention.ViewModels
                 if (result.SavedOffline)
                 {
                     ShowPendingSync = true;
-                    UpdateOfflineIndicator();
                     SnackbarMessage = "Consulta guardada localmente. Pendiente de sincronización.";
                 }
                 else

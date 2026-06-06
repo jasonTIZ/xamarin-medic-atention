@@ -112,6 +112,7 @@ namespace Medical_atention.Services
                         LocalDataChangedHelper.NotifyPatientsChanged();
                     }
 
+                    await LastSyncHelper.RecordPatientSyncAsync();
                     return patients;
                 }
             }
@@ -321,9 +322,7 @@ namespace Medical_atention.Services
                     if (remote.Count > 0)
                     {
                         await _repository.ReplaceAllAsync(remote.Select(PatientMapper.ToEntity));
-                        await SecureStorage.SetAsync(
-                            AppConstants.LastPatientSyncKey,
-                            DateTime.UtcNow.ToString("o"));
+                        await LastSyncHelper.RecordPatientSyncAsync();
                         return (remote, false, null);
                     }
                 }
@@ -415,9 +414,10 @@ namespace Medical_atention.Services
         {
             if (!string.IsNullOrEmpty(token))
             {
+                var baseUrl = await ApiBaseUrlResolver.ResolveAsync();
                 var client = new HttpClient
                 {
-                    BaseAddress = new Uri(AppConstants.ApiBaseUrl.TrimEnd('/') + "/"),
+                    BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/"),
                     Timeout = TimeSpan.FromSeconds(15)
                 };
                 client.DefaultRequestHeaders.Authorization =

@@ -4,7 +4,10 @@
        xmlns:views="clr-namespace:Medical_atention.Views"
        x:Class="Medical_atention.Views.AppShell"
        FlyoutBehavior="Flyout"
-       Shell.NavBarIsVisible="True">
+       Shell.NavBarIsVisible="True"
+       Shell.TabBarBackgroundColor="White"
+       Shell.TabBarTitleColor="#2196F3"
+       Shell.TabBarUnselectedColor="#757575">
 
     <Shell.FlyoutHeader>
         <StackLayout Padding="16,40,16,16" BackgroundColor="#2196F3" Spacing="4">
@@ -20,17 +23,22 @@
         </StackLayout>
     </Shell.FlyoutHeader>
 
-    <ShellContent Title="Pacientes"
-                  ContentTemplate="{DataTemplate views:PatientListPage}"
-                  Route="patients" />
+    <TabBar>
+        <ShellContent Title="Pacientes"
+                      Icon="tab_patients"
+                      ContentTemplate="{DataTemplate views:PatientListPage}"
+                      Route="patients" />
 
-    <ShellContent Title="Triaje"
-                  ContentTemplate="{DataTemplate views:TriagePage}"
-                  Route="triage" />
+        <ShellContent Title="Triaje"
+                      Icon="tab_triage"
+                      ContentTemplate="{DataTemplate views:TriagePage}"
+                      Route="triage" />
 
-    <ShellContent Title="Perfil"
-                  ContentTemplate="{DataTemplate views:ProfilePage}"
-                  Route="profile" />
+        <ShellContent Title="Perfil"
+                      Icon="tab_profile"
+                      ContentTemplate="{DataTemplate views:ProfilePage}"
+                      Route="profile" />
+    </TabBar>
 
     <MenuItem Text="Cerrar sesión"
               Clicked="OnLogoutClicked" />

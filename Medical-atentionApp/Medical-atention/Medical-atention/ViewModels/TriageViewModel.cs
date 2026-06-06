@@ -1,4 +1,3 @@
-using Medical_atention.Constants;
 using Medical_atention.Helpers;
 using Medical_atention.Models;
 using Medical_atention.Services;
@@ -18,9 +17,7 @@ namespace Medical_atention.ViewModels
     {
         private readonly IPatientService _patientService;
         private bool _isLoading;
-        private bool _isOffline;
         private bool _isEmpty;
-        private string _lastSyncText = string.Empty;
         private string _snackbarMessage = string.Empty;
         private bool _isSnackbarVisible;
         private bool _autoRefreshEnabled;
@@ -43,12 +40,6 @@ namespace Medical_atention.ViewModels
             set { _isLoading = value; OnPropertyChanged(); }
         }
 
-        public bool IsOffline
-        {
-            get => _isOffline;
-            set { _isOffline = value; OnPropertyChanged(); }
-        }
-
         public bool IsEmpty
         {
             get => _isEmpty;
@@ -61,12 +52,6 @@ namespace Medical_atention.ViewModels
         }
 
         public bool HasPatients => !_isEmpty;
-
-        public string LastSyncText
-        {
-            get => _lastSyncText;
-            set { _lastSyncText = value; OnPropertyChanged(); }
-        }
 
         public string SnackbarMessage
         {
@@ -104,10 +89,7 @@ namespace Medical_atention.ViewModels
             {
                 await _patientService.SyncPendingPriorityChangesAsync();
 
-                var (patients, fromCache, error) = await _patientService.GetPatientsByPriorityAsync();
-
-                IsOffline = fromCache || !_patientService.IsOnline();
-                await UpdateLastSyncTextAsync(fromCache);
+                var (patients, _, error) = await _patientService.GetPatientsByPriorityAsync();
 
                 if (!string.IsNullOrEmpty(error) && patients.Count == 0)
                 {
@@ -183,28 +165,6 @@ namespace Medical_atention.ViewModels
         {
             foreach (var group in Groups)
                 group.Clear();
-        }
-
-        private async Task UpdateLastSyncTextAsync(bool fromCache)
-        {
-            if (IsOffline || fromCache)
-            {
-                try
-                {
-                    var raw = await SecureStorage.GetAsync(AppConstants.LastPatientSyncKey);
-                    if (!string.IsNullOrEmpty(raw) && DateTime.TryParse(raw, out var sync))
-                    {
-                        LastSyncText = $"Modo sin conexión — última sincronización: {sync.ToLocalTime():dd/MM/yyyy HH:mm}";
-                        return;
-                    }
-                }
-                catch { }
-
-                LastSyncText = "Modo sin conexión — datos locales";
-                return;
-            }
-
-            LastSyncText = string.Empty;
         }
 
         private void ShowSnackbar(string message)

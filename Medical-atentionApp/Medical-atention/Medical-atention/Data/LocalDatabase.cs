@@ -43,6 +43,7 @@ namespace Medical_atention.Data
             await _connection.CreateTableAsync<PatientEntity>();
             await _connection.CreateTableAsync<SyncQueueEntity>();
             await _connection.CreateTableAsync<AttachmentEntity>();
+            await _connection.CreateTableAsync<ReminderEntity>();
             await EnsurePatientColumnsAsync();
             await EnsureConsultationsSchemaAsync();
 
