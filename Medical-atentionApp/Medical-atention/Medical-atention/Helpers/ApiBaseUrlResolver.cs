@@ -23,7 +23,7 @@ namespace Medical_atention.Helpers
                     : new[] { AppConstants.ApiBaseUrlEmulator };
             }
 
-            return AppConstants.ApiBaseUrlPhysicalCandidates;
+            return new[] { AppConstants.ApiBaseUrlPhysical };
         }
 
         public static async Task<string> ResolveAsync()

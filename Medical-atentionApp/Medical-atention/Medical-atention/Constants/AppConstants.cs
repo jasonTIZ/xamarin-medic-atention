@@ -1,4 +1,3 @@
-using Medical_atention.Helpers;
 using Xamarin.Essentials;
 
 namespace Medical_atention.Constants
@@ -8,17 +7,8 @@ namespace Medical_atention.Constants
         // Android Emulator → laptop host
         public const string ApiBaseUrlEmulator = "http://10.0.2.2:5258";
 
-        // Physical device (same Wi‑Fi as laptop) — candidatas en orden de prueba
+        // Physical device (same Wi‑Fi as laptop)
         public const string ApiBaseUrlPhysical = "http://192.168.100.54:5258";
-        public const string ApiBaseUrlPhysicalAlt = "http://192.168.100.12:5258";
-        public const string ApiBaseUrlLocalhost = "http://127.0.0.1:5258";
-
-        public static readonly string[] ApiBaseUrlPhysicalCandidates =
-        {
-            ApiBaseUrlPhysicalAlt,
-            ApiBaseUrlPhysical,
-            ApiBaseUrlLocalhost
-        };
 
         // iOS Simulator (if applicable)
         public const string ApiBaseUrlIosSimulator = "http://localhost:5258";
@@ -34,8 +24,7 @@ namespace Medical_atention.Constants
                         : ApiBaseUrlEmulator;
                 }
 
-                var cached = ApiBaseUrlResolver.CachedUrl;
-                return !string.IsNullOrEmpty(cached) ? cached : ApiBaseUrlPhysicalAlt;
+                return ApiBaseUrlPhysical;
             }
         }
 
