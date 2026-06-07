@@ -70,7 +70,7 @@ namespace Medical_atention.Droid
             var data = new Dictionary<string, string>();
             foreach (var key in extras.KeySet())
             {
-                var value = extras.Get(key)?.ToString();
+                var value = extras.GetString(key);
                 if (value != null) data[key] = value;
             }
 

@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:Medical_atention.Controls"
              x:Class="Medical_atention.Views.PatientListPage"
-             BackgroundColor="#F0F4F8"
              Title="Pacientes">
 
     <Grid RowDefinitions="Auto,*">
@@ -18,43 +17,28 @@
 
             <SearchBar Text="{Binding SearchText, Mode=TwoWay}"
                        Placeholder="Buscar por nombre o cédula (sin guiones)"
-                       BackgroundColor="White"
-                       TextColor="#1A365D"
-                       PlaceholderColor="#A0AEC0"
-                       CancelButtonColor="#2C7BE5"
                        Margin="0,0,0,12" />
 
             <ActivityIndicator IsRunning="{Binding IsLoading}"
                                IsVisible="{Binding IsLoading}"
-                               Color="#2C7BE5"
                                Margin="0,40,0,0" />
 
-            <StackLayout IsVisible="{Binding IsEmpty}"
-                         VerticalOptions="CenterAndExpand"
-                         HorizontalOptions="CenterAndExpand"
-                         Spacing="12"
-                         Margin="0,80,0,0">
-                <Label Text="Sin pacientes registrados"
-                       FontSize="16" FontAttributes="Bold"
-                       TextColor="#718096"
-                       HorizontalOptions="Center" />
-                <Label Text="Registra el primero usando el botón +"
-                       FontSize="13"
-                       TextColor="#A0AEC0"
-                       HorizontalOptions="Center"
-                       HorizontalTextAlignment="Center" />
-            </StackLayout>
+            <!-- Estado vacío — sin pacientes -->
+            <controls:EmptyStateView
+                IsVisible="{Binding IsEmpty}"
+                Icon="🏥"
+                Title="Sin pacientes registrados"
+                Subtitle="Registra el primero usando el botón +"
+                VerticalOptions="CenterAndExpand"
+                HorizontalOptions="CenterAndExpand" />
 
-            <StackLayout IsVisible="{Binding ShowSearchEmpty}"
-                         VerticalOptions="CenterAndExpand"
-                         HorizontalOptions="CenterAndExpand"
-                         Margin="0,40,0,0">
-                <Label Text="{Binding EmptyMessage}"
-                       FontSize="15"
-                       TextColor="#718096"
-                       HorizontalOptions="Center"
-                       HorizontalTextAlignment="Center" />
-            </StackLayout>
+            <!-- Estado vacío — sin resultados de búsqueda -->
+            <controls:EmptyStateView
+                IsVisible="{Binding ShowSearchEmpty}"
+                Icon="🔍"
+                Title="{Binding EmptyMessage}"
+                VerticalOptions="CenterAndExpand"
+                HorizontalOptions="CenterAndExpand" />
 
             <CollectionView x:Name="PatientsList"
                             ItemsSource="{Binding FilteredPatients}"
@@ -62,13 +46,11 @@
                             SelectionMode="None">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Frame BorderColor="#E2E8F0" CornerRadius="12"
-                               Padding="12" HasShadow="False"
-                               BackgroundColor="White"
+                        <Frame Style="{StaticResource CardFrameStyle}"
                                Margin="0,0,0,10">
                             <Grid ColumnDefinitions="48,*,40" ColumnSpacing="12">
                                 <Frame Grid.Column="0"
-                                       BackgroundColor="#EBF4FF"
+                                       BackgroundColor="{StaticResource PrimaryLightColor}"
                                        CornerRadius="24"
                                        Padding="0"
                                        HasShadow="False"
@@ -78,7 +60,7 @@
                                        VerticalOptions="Center">
                                     <Label Text="{Binding Initials}"
                                            FontSize="16" FontAttributes="Bold"
-                                           TextColor="#2C7BE5"
+                                           TextColor="{StaticResource PrimaryColor}"
                                            HorizontalOptions="Center"
                                            VerticalOptions="Center" />
                                 </Frame>
@@ -86,11 +68,10 @@
                                 <StackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
                                     <Label Text="{Binding FullName}"
                                            FontSize="15" FontAttributes="Bold"
-                                           TextColor="#1A202C"
+                                           TextColor="{AppThemeBinding Light=#1A202C, Dark=#E2E8F0}"
                                            LineBreakMode="TailTruncation" />
                                     <Label Text="{Binding IdentificationNumber, StringFormat='Cédula: {0}'}"
-                                           FontSize="12"
-                                           TextColor="#718096" />
+                                           Style="{StaticResource CaptionStyle}" />
                                     <controls:PriorityBadgeView Priority="{Binding Priority}"
                                                                 Size="Small"
                                                                 IsVisible="{Binding HasPriority}"
@@ -101,7 +82,7 @@
                                         Text="⋮"
                                         FontSize="18"
                                         TextColor="#718096"
-                                        BackgroundColor="#EDF2F7"
+                                        BackgroundColor="{AppThemeBinding Light=#EDF2F7, Dark=#2D3748}"
                                         CornerRadius="20"
                                         WidthRequest="36"
                                         HeightRequest="36"
@@ -130,11 +111,11 @@
 
         <Frame x:Name="MenuPopup"
                IsVisible="False"
-               BackgroundColor="White"
+               BackgroundColor="{AppThemeBinding Light=White, Dark=#2D3748}"
                CornerRadius="12"
                Padding="0"
                HasShadow="True"
-               BorderColor="#E2E8F0"
+               BorderColor="{AppThemeBinding Light=#E2E8F0, Dark=#4A5568}"
                WidthRequest="260"
                AbsoluteLayout.LayoutBounds="0,0,260,220"
                AbsoluteLayout.LayoutFlags="None">
@@ -142,31 +123,34 @@
                 <Button Text="Ver Historial Completo"
                         Clicked="OnMenuHistorial"
                         BackgroundColor="Transparent"
-                        TextColor="#2D3748"
+                        TextColor="{AppThemeBinding Light=#2D3748, Dark=#E2E8F0}"
                         FontSize="14"
                         HorizontalOptions="Fill"
                         Padding="16,14" />
-                <BoxView HeightRequest="1" Color="#EDF2F7" />
+                <BoxView HeightRequest="1"
+                         Color="{AppThemeBinding Light=#EDF2F7, Dark=#4A5568}" />
                 <Button Text="Detalle del Paciente"
                         Clicked="OnMenuDetail"
                         BackgroundColor="Transparent"
-                        TextColor="#2D3748"
+                        TextColor="{AppThemeBinding Light=#2D3748, Dark=#E2E8F0}"
                         FontSize="14"
                         HorizontalOptions="Fill"
                         Padding="16,14" />
-                <BoxView HeightRequest="1" Color="#EDF2F7" />
+                <BoxView HeightRequest="1"
+                         Color="{AppThemeBinding Light=#EDF2F7, Dark=#4A5568}" />
                 <Button Text="Nueva Consulta"
                         Clicked="OnMenuNewConsultation"
                         BackgroundColor="Transparent"
-                        TextColor="#2D3748"
+                        TextColor="{AppThemeBinding Light=#2D3748, Dark=#E2E8F0}"
                         FontSize="14"
                         HorizontalOptions="Fill"
                         Padding="16,14" />
-                <BoxView HeightRequest="1" Color="#EDF2F7" />
+                <BoxView HeightRequest="1"
+                         Color="{AppThemeBinding Light=#EDF2F7, Dark=#4A5568}" />
                 <Button Text="Eliminar Paciente"
                         Clicked="OnMenuDelete"
                         BackgroundColor="Transparent"
-                        TextColor="#E53E3E"
+                        TextColor="{StaticResource ErrorColor}"
                         FontSize="14"
                         HorizontalOptions="Fill"
                         Padding="16,14" />
@@ -175,7 +159,7 @@
 
         </AbsoluteLayout>
 
-        <Frame BackgroundColor="#2C7BE5"
+        <Frame BackgroundColor="{StaticResource PrimaryColor}"
                CornerRadius="28"
                HasShadow="True"
                HeightRequest="56"

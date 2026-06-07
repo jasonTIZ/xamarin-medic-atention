@@ -20,6 +20,7 @@ namespace Medical_atention.ViewModels
     {
         private readonly IConsultationService _consultationService;
         private readonly IAttachmentService _attachmentService;
+        private readonly IConnectivityService _connectivity;
 
         private readonly List<PendingImage> _pendingImages = new List<PendingImage>();
         private ObservableCollection<PendingImageItem> _previewImages = new ObservableCollection<PendingImageItem>();
@@ -44,12 +45,16 @@ namespace Medical_atention.ViewModels
         private bool _isSnackbarVisible;
         private bool _showPendingSync;
 
-        public RegisterConsultationViewModel() : this(new ConsultationService(), new AttachmentService()) { }
+        public RegisterConsultationViewModel() : this(new ConsultationService(), new AttachmentService(), ConnectivityService.Instance) { }
 
-        public RegisterConsultationViewModel(IConsultationService consultationService, IAttachmentService attachmentService)
+        public RegisterConsultationViewModel(
+            IConsultationService consultationService,
+            IAttachmentService attachmentService,
+            IConnectivityService connectivity = null)
         {
             _consultationService = consultationService;
             _attachmentService = attachmentService;
+            _connectivity = connectivity ?? ConnectivityService.Instance;
             var selectPriority = new Command<string>(SelectPriority);
             PriorityOptions = new ObservableCollection<PriorityOptionItem>
             {
@@ -65,6 +70,7 @@ namespace Medical_atention.ViewModels
             AddFromCameraCommand = new Command(async () => await PickImageAsync(fromCamera: true), () => CanAddImage);
             RemoveImageCommand = new Command<PendingImageItem>(RemoveImage);
             UpdateOfflineIndicator();
+            _connectivity.Start();
             Connectivity.ConnectivityChanged += (_, __) => UpdateOfflineIndicator();
         }
 
@@ -288,7 +294,7 @@ namespace Medical_atention.ViewModels
 
         private void UpdateOfflineIndicator()
         {
-            ShowOfflineIndicator = Connectivity.NetworkAccess != NetworkAccess.Internet || _showPendingSync;
+            ShowOfflineIndicator = !_connectivity.IsConnected || _showPendingSync;
             OnPropertyChanged(nameof(ShowOfflineIndicator));
         }
 

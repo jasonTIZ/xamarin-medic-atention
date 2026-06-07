@@ -2,6 +2,7 @@ using Medical_atention.Constants;
 using Medical_atention.Data;
 using Medical_atention.Helpers;
 using Medical_atention.Models;
+using static Medical_atention.Helpers.ApiExceptionHandler;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -71,8 +72,15 @@ namespace Medical_atention.Services
 
                     if (response.StatusCode == HttpStatusCode.BadRequest)
                         return new RegisterConsultationResult { Error = "Datos inválidos. Revisa los campos." };
+
+                    var apiError = await ProcessResponseAsync(response, "POST /api/consultations");
+                    if (apiError != null)
+                        return new RegisterConsultationResult { Error = apiError };
                 }
-                catch (Exception) when (isOnline) { }
+                catch (Exception ex) when (isOnline)
+                {
+                    HandleException(ex, "POST /api/consultations");
+                }
             }
 
             await _localDb.SaveConsultationAsync(ToLocal(request, pendingSync: true));

@@ -8,6 +8,7 @@ using System;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
+using static Medical_atention.Helpers.ApiExceptionHandler;
 
 namespace Medical_atention
 {
@@ -19,6 +20,9 @@ namespace Medical_atention
             MainPage = new LoginPage();
             MessagingCenter.Subscribe<object, int>(
                 this, SyncNotificationHelper.SyncCompletedMessage, OnSyncCompleted);
+
+            MessagingCenter.Subscribe<object>(
+                this, UnauthorizedMessage, OnUnauthorized);
 
             // Notificaciones push: primer plano (alerta) y apertura (navegación).
             MessagingCenter.Subscribe<object, PushMessage>(
@@ -117,6 +121,15 @@ namespace Medical_atention
             {
                 // Navegación best-effort; no romper si la ruta no está disponible.
             }
+        }
+
+        private void OnUnauthorized(object sender)
+        {
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                SecureStorage.RemoveAll();
+                MainPage = new LoginPage();
+            });
         }
 
         private void OnSyncCompleted(object sender, int syncedCount)

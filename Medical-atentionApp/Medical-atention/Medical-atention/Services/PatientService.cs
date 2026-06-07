@@ -2,6 +2,7 @@ using Medical_atention.Constants;
 using Medical_atention.Data;
 using Medical_atention.Helpers;
 using Medical_atention.Models;
+using static Medical_atention.Helpers.ApiExceptionHandler;
 using Medical_atention.Models.Entities;
 using Newtonsoft.Json;
 using System;
@@ -30,6 +31,7 @@ namespace Medical_atention.Services
         public async Task<(PatientResponseDto patient, string error)> RegisterAsync(
             PatientRequestDto request, string token)
         {
+            const string endpoint = "POST /api/patients";
             try
             {
                 using (var client = await CreateClientAsync(token))
@@ -41,8 +43,8 @@ namespace Medical_atention.Services
                     if (response.StatusCode == HttpStatusCode.Conflict)
                         return (null, "Ya existe un paciente con esta cédula");
 
-                    if (!response.IsSuccessStatusCode)
-                        return (null, "Error al registrar el paciente");
+                    var error = await ApiExceptionHandler.ProcessResponseAsync(response, endpoint);
+                    if (error != null) return (null, error);
 
                     var dto = JsonConvert.DeserializeObject<PatientResponseDto>(
                         await response.Content.ReadAsStringAsync());
@@ -50,9 +52,10 @@ namespace Medical_atention.Services
                     return (dto, null);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return (null, "Sin conexión, verifica tu red");
+                var msg = ApiExceptionHandler.HandleException(ex, endpoint);
+                return (null, msg ?? "Sin conexión, verifica tu red");
             }
         }
 
@@ -64,12 +67,14 @@ namespace Medical_atention.Services
                 return offline == null ? null : MapEntityToDto(offline);
             }
 
+            var endpoint = $"GET /api/patients/{id}";
             try
             {
                 using (var client = await CreateClientAsync(token))
                 {
                     var response = await client.GetAsync($"api/patients/{id}");
-                    if (!response.IsSuccessStatusCode)
+                    var error = await ApiExceptionHandler.ProcessResponseAsync(response, endpoint);
+                    if (error != null)
                     {
                         var fallback = await _repository.GetByIdAsync(id);
                         return fallback == null ? null : MapEntityToDto(fallback);
@@ -82,8 +87,9 @@ namespace Medical_atention.Services
                     return dto;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                ApiExceptionHandler.HandleException(ex, endpoint);
                 var local = await _repository.GetByIdAsync(id);
                 return local == null ? null : MapEntityToDto(local);
             }
@@ -132,6 +138,7 @@ namespace Medical_atention.Services
             if (!IsOnline())
                 return await UpdatePatientLocallyAsync(entity, request);
 
+            var endpoint = $"PUT /api/patients/{id}";
             try
             {
                 using (var client = await CreateClientAsync(token))
@@ -143,8 +150,8 @@ namespace Medical_atention.Services
                     if (response.StatusCode == HttpStatusCode.Conflict)
                         return (null, "Ya existe un paciente con esta cédula");
 
-                    if (!response.IsSuccessStatusCode)
-                        return (null, "Error al guardar los cambios");
+                    var error = await ApiExceptionHandler.ProcessResponseAsync(response, endpoint);
+                    if (error != null) return (null, error);
 
                     var dto = JsonConvert.DeserializeObject<PatientResponseDto>(
                         await response.Content.ReadAsStringAsync());
@@ -153,8 +160,9 @@ namespace Medical_atention.Services
                     return (dto, null);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                ApiExceptionHandler.HandleException(ex, endpoint);
                 return await UpdatePatientLocallyAsync(entity, request);
             }
         }
@@ -168,6 +176,7 @@ namespace Medical_atention.Services
             if (!IsOnline())
                 return await DeletePatientLocallyAsync(entity);
 
+            var endpoint = $"DELETE /api/patients/{id}";
             try
             {
                 using (var client = await CreateClientAsync(token))
@@ -180,11 +189,13 @@ namespace Medical_atention.Services
                         return true;
                     }
 
+                    await ProcessResponseAsync(response, endpoint);
                     return false;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                HandleException(ex, endpoint);
                 return await DeletePatientLocallyAsync(entity);
             }
         }
@@ -369,7 +380,8 @@ namespace Medical_atention.Services
                         };
                         var response = await client.SendAsync(req);
 
-                        if (response.IsSuccessStatusCode)
+                        var err = await ProcessResponseAsync(response, $"PATCH /api/patients/{id}/priority");
+                        if (err == null)
                         {
                             var dto = JsonConvert.DeserializeObject<PatientResponseDto>(
                                 await response.Content.ReadAsStringAsync());
@@ -381,12 +393,13 @@ namespace Medical_atention.Services
                             return (true, null);
                         }
 
-                        return (false, "No se pudo actualizar la prioridad");
+                        return (false, err ?? "No se pudo actualizar la prioridad");
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    return (false, "Error de red al actualizar prioridad");
+                    var msg = HandleException(ex, $"PATCH /api/patients/{id}/priority");
+                    return (false, msg ?? "Error de red al actualizar prioridad");
                 }
             }
 

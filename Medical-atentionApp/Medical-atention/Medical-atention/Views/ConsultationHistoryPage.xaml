@@ -3,41 +3,36 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:Medical_atention.Controls"
              x:Class="Medical_atention.Views.ConsultationHistoryPage"
-             BackgroundColor="#F0F4F8"
              Title="Historial de Consultas">
 
     <Grid RowDefinitions="Auto,*">
         <controls:OfflineBannerView x:Name="OfflineBanner" Grid.Row="0" />
 
         <StackLayout Grid.Row="1" Spacing="0">
-            <Frame BackgroundColor="#EBF4FF"
+            <Frame BackgroundColor="{StaticResource PrimaryLightColor}"
                    CornerRadius="0"
                    Padding="16,12"
                    HasShadow="False"
                    BorderColor="Transparent">
                 <Label Text="{Binding PatientDisplayLine}"
                        FontSize="14"
-                       TextColor="#1A365D" />
+                       TextColor="{AppThemeBinding Light=#1A365D, Dark=#E2E8F0}" />
             </Frame>
 
             <StackLayout Padding="16,12,16,8" Spacing="10">
 
                 <Grid ColumnDefinitions="72,*" ColumnSpacing="10">
                     <Label Text="Desde:"
-                           FontSize="14"
-                           TextColor="#4A5568"
+                           Style="{StaticResource BodySecondaryStyle}"
                            VerticalOptions="Center" />
                     <Frame Grid.Column="1"
-                           BorderColor="#CBD5E0"
-                           CornerRadius="8"
+                           Style="{StaticResource InputFrameStyle}"
                            Padding="12,8"
-                           HasShadow="False"
-                           BackgroundColor="White"
                            HeightRequest="48">
                         <DatePicker Date="{Binding FilterFrom}"
                                     Format="dd/MM/yyyy"
                                     FontSize="15"
-                                    TextColor="#1A365D"
+                                    TextColor="{AppThemeBinding Light=#1A365D, Dark=#E2E8F0}"
                                     VerticalOptions="Center"
                                     HorizontalOptions="FillAndExpand" />
                     </Frame>
@@ -45,20 +40,16 @@
 
                 <Grid ColumnDefinitions="72,*,Auto" ColumnSpacing="10">
                     <Label Text="Hasta:"
-                           FontSize="14"
-                           TextColor="#4A5568"
+                           Style="{StaticResource BodySecondaryStyle}"
                            VerticalOptions="Center" />
                     <Frame Grid.Column="1"
-                           BorderColor="#CBD5E0"
-                           CornerRadius="8"
+                           Style="{StaticResource InputFrameStyle}"
                            Padding="12,8"
-                           HasShadow="False"
-                           BackgroundColor="White"
                            HeightRequest="48">
                         <DatePicker Date="{Binding FilterTo}"
                                     Format="dd/MM/yyyy"
                                     FontSize="15"
-                                    TextColor="#1A365D"
+                                    TextColor="{AppThemeBinding Light=#1A365D, Dark=#E2E8F0}"
                                     VerticalOptions="Center"
                                     HorizontalOptions="FillAndExpand" />
                     </Frame>
@@ -66,7 +57,7 @@
                             Text="Filtrar"
                             Command="{Binding FilterCommand}"
                             BackgroundColor="Transparent"
-                            TextColor="#2C7BE5"
+                            TextColor="{StaticResource PrimaryColor}"
                             FontSize="14"
                             FontAttributes="Bold"
                             Padding="12,0"
@@ -78,7 +69,6 @@
 
             <ActivityIndicator IsRunning="{Binding IsLoading}"
                                IsVisible="{Binding IsLoading}"
-                               Color="#2C7BE5"
                                Margin="0,8,0,0" />
 
             <CollectionView x:Name="ConsultationsList"
@@ -87,28 +77,15 @@
                           SelectionMode="Single"
                           SelectionChanged="OnConsultationSelected">
                 <CollectionView.EmptyView>
-                    <StackLayout Padding="40,60"
-                                 VerticalOptions="Center"
-                                 HorizontalOptions="Center"
-                                 Spacing="12">
-                        <Label Text="📁+"
-                               FontSize="40"
-                               HorizontalOptions="Center"
-                               TextColor="#A0AEC0" />
-                        <Label Text="Este paciente aún no tiene consultas registradas."
-                               FontSize="14"
-                               TextColor="#718096"
-                               HorizontalOptions="Center"
-                               HorizontalTextAlignment="Center" />
-                    </StackLayout>
+                    <controls:EmptyStateView
+                        Icon="📁"
+                        Title="Sin consultas en este período"
+                        Subtitle="Este paciente aún no tiene consultas registradas." />
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Frame BorderColor="#E2E8F0"
-                               CornerRadius="12"
-                               Padding="14,12"
+                        <Frame Style="{StaticResource CardFrameStyle}"
                                HasShadow="True"
-                               BackgroundColor="White"
                                Margin="0,0,0,10">
                             <Grid RowDefinitions="Auto,Auto,Auto"
                                   ColumnDefinitions="*,Auto"
@@ -116,8 +93,7 @@
                                   ColumnSpacing="8">
                                 <Label Grid.Row="0" Grid.Column="0"
                                        Text="{Binding DateDisplay}"
-                                       FontSize="12"
-                                       TextColor="#718096" />
+                                       Style="{StaticResource CaptionStyle}" />
                                 <controls:PriorityBadgeView Grid.Row="0" Grid.Column="1"
                                                             Grid.RowSpan="2"
                                                             Priority="{Binding Priority}"
@@ -127,12 +103,12 @@
                                        Text="{Binding DiagnosisTitle}"
                                        FontSize="15"
                                        FontAttributes="Bold"
-                                       TextColor="#1A202C"
+                                       TextColor="{AppThemeBinding Light=#1A202C, Dark=#E2E8F0}"
                                        LineBreakMode="TailTruncation" />
                                 <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
                                        Text="{Binding SummaryPreview}"
                                        FontSize="13"
-                                       TextColor="#4A5568"
+                                       TextColor="{AppThemeBinding Light=#4A5568, Dark=#A0AEC0}"
                                        LineBreakMode="TailTruncation" />
                             </Grid>
                         </Frame>

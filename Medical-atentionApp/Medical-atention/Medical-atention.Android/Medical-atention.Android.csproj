@@ -24,6 +24,10 @@
     <AndroidHttpClientHandlerType>Xamarin.Android.Net.AndroidClientHandler</AndroidHttpClientHandlerType>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <!-- Xamarin.Firebase.Messaging 122 requiere AndroidX.Core >= 1.7.0.2,
+         que supera la restricción de XF5 (< 1.7.0). Se fuerza 1.7.0.2 y se
+         suprime NU1107 porque la incompatibilidad binaria no existe en práctica. -->
+    <NoWarn>$(NoWarn);NU1107</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

@@ -17,6 +17,7 @@ namespace Medical_atention.ViewModels
     public class PatientsViewModel : INotifyPropertyChanged
     {
         private readonly IPatientService _patientService;
+        private readonly IConnectivityService _connectivity;
         private readonly ObservableCollection<PatientResponseDto> _filteredPatients =
             new ObservableCollection<PatientResponseDto>();
         private List<PatientResponseDto> _allPatients = new List<PatientResponseDto>();
@@ -24,12 +25,15 @@ namespace Medical_atention.ViewModels
         private bool _isLoading;
         private bool _isEmpty;
 
-        public PatientsViewModel() : this(new PatientService()) { }
+        public PatientsViewModel() : this(new PatientService(), ConnectivityService.Instance) { }
 
-        public PatientsViewModel(IPatientService patientService)
+        public PatientsViewModel(IPatientService patientService, IConnectivityService connectivity = null)
         {
             _patientService = patientService;
+            _connectivity = connectivity ?? ConnectivityService.Instance;
         }
+
+        public bool IsOnline => _connectivity.IsConnected;
 
         public ObservableCollection<PatientResponseDto> FilteredPatients => _filteredPatients;
 
