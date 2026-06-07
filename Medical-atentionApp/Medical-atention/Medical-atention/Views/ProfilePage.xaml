@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Medical_atention.ViewModels"
              x:Class="Medical_atention.Views.ProfilePage"
-             BackgroundColor="#F0F4F8"
              Title="Perfil">
 
     <ContentPage.BindingContext>
@@ -13,123 +12,94 @@
     <ScrollView>
         <StackLayout Padding="24,32,24,32" Spacing="0">
 
-            <!-- User info card -->
-            <Frame BackgroundColor="White" CornerRadius="12" HasShadow="True"
-                   Padding="20" Margin="0,0,0,24">
+            <!-- Tarjeta de usuario -->
+            <Frame Style="{StaticResource CardFrameStyle}" HasShadow="True" Margin="0,0,0,24">
                 <StackLayout Spacing="6">
                     <Label Text="{Binding UserName}"
-                           FontSize="20" FontAttributes="Bold"
-                           TextColor="#1A365D" />
+                           Style="{StaticResource TitleStyle}"
+                           FontSize="20" />
                     <Label Text="{Binding UserRole}"
-                           FontSize="14" TextColor="#2C7BE5"
+                           FontSize="14"
+                           TextColor="{StaticResource PrimaryColor}"
                            FontAttributes="Bold" />
                     <Label Text="{Binding UserEmail}"
-                           FontSize="14" TextColor="#718096"
+                           Style="{StaticResource CaptionStyle}"
+                           FontSize="14"
                            Margin="0,4,0,0" />
                 </StackLayout>
             </Frame>
 
-            <!-- Success snackbar -->
+            <!-- Éxito -->
             <Frame IsVisible="{Binding HasSuccessMessage}"
-                   BackgroundColor="#F0FFF4"
-                   BorderColor="#9AE6B4"
+                   BackgroundColor="{StaticResource SuccessLightColor}"
+                   BorderColor="{StaticResource SuccessBorderColor}"
                    CornerRadius="8"
                    Padding="12,10"
                    Margin="0,0,0,16"
                    HasShadow="False">
                 <Label Text="{Binding SuccessMessage}"
-                       TextColor="#276749"
+                       TextColor="{StaticResource SuccessTextColor}"
                        FontSize="14"
                        HorizontalOptions="Center" />
             </Frame>
 
-            <!-- Change password section -->
             <Label Text="Cambiar contraseña"
-                   FontSize="16" FontAttributes="Bold"
-                   TextColor="#1A365D"
+                   Style="{StaticResource SectionHeaderStyle}"
                    Margin="0,0,0,16" />
 
-            <!-- Current password -->
             <Label Text="Contraseña actual"
-                   FontSize="13" FontAttributes="Bold"
-                   TextColor="#4A5568"
+                   Style="{StaticResource FieldLabelStyle}"
                    Margin="0,0,0,4" />
-            <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                   Padding="12,0" HasShadow="False"
-                   BackgroundColor="White">
+            <Frame Style="{StaticResource InputFrameStyle}">
                 <Entry Text="{Binding CurrentPassword}"
                        Placeholder="••••••••"
-                       IsPassword="True"
-                       BackgroundColor="Transparent" />
+                       IsPassword="True" />
             </Frame>
             <Label Text="{Binding CurrentPasswordError}"
-                   TextColor="#E53E3E" FontSize="12"
+                   Style="{StaticResource ErrorLabelStyle}"
                    IsVisible="{Binding HasCurrentPasswordError}"
                    Margin="4,4,0,8" />
 
-            <!-- New password -->
             <Label Text="Nueva contraseña"
-                   FontSize="13" FontAttributes="Bold"
-                   TextColor="#4A5568"
+                   Style="{StaticResource FieldLabelStyle}"
                    Margin="0,8,0,4" />
-            <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                   Padding="12,0" HasShadow="False"
-                   BackgroundColor="White">
+            <Frame Style="{StaticResource InputFrameStyle}">
                 <Entry Text="{Binding NewPassword}"
                        Placeholder="Mínimo 8 caracteres"
-                       IsPassword="True"
-                       BackgroundColor="Transparent" />
+                       IsPassword="True" />
             </Frame>
             <Label Text="{Binding NewPasswordError}"
-                   TextColor="#E53E3E" FontSize="12"
+                   Style="{StaticResource ErrorLabelStyle}"
                    IsVisible="{Binding HasNewPasswordError}"
                    Margin="4,4,0,8" />
 
-            <!-- Confirm password -->
             <Label Text="Confirmar nueva contraseña"
-                   FontSize="13" FontAttributes="Bold"
-                   TextColor="#4A5568"
+                   Style="{StaticResource FieldLabelStyle}"
                    Margin="0,8,0,4" />
-            <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                   Padding="12,0" HasShadow="False"
-                   BackgroundColor="White">
+            <Frame Style="{StaticResource InputFrameStyle}">
                 <Entry Text="{Binding ConfirmPassword}"
                        Placeholder="Repite la nueva contraseña"
-                       IsPassword="True"
-                       BackgroundColor="Transparent" />
+                       IsPassword="True" />
             </Frame>
             <Label Text="{Binding ConfirmPasswordError}"
-                   TextColor="#E53E3E" FontSize="12"
+                   Style="{StaticResource ErrorLabelStyle}"
                    IsVisible="{Binding HasConfirmPasswordError}"
                    Margin="4,4,0,0" />
 
-            <!-- Save button -->
             <Button Text="Guardar cambios"
                     Command="{Binding ChangePasswordCommand}"
-                    BackgroundColor="#2C7BE5"
-                    TextColor="White"
-                    CornerRadius="8"
-                    FontAttributes="Bold"
+                    Style="{StaticResource PrimaryButtonStyle}"
                     FontSize="15"
                     HeightRequest="50"
                     Margin="0,24,0,0" />
 
             <ActivityIndicator IsRunning="{Binding IsLoading}"
                                IsVisible="{Binding IsLoading}"
-                               Color="#2C7BE5"
                                Margin="0,12,0,0" />
 
-            <!-- Logout button -->
             <Button Text="Cerrar sesión"
                     Command="{Binding LogoutCommand}"
-                    BackgroundColor="Transparent"
-                    TextColor="#E53E3E"
-                    BorderColor="#E53E3E"
-                    BorderWidth="1"
-                    CornerRadius="8"
-                    FontAttributes="Bold"
-                    FontSize="15"
-                    HeightRequest="50"
+                    Style="{StaticResource DangerButtonStyle}"
                     Margin="0,16,0,0" />
 
         </StackLayout>

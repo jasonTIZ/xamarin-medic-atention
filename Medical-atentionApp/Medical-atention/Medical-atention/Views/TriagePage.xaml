@@ -4,7 +4,6 @@
              xmlns:conv="clr-namespace:Medical_atention.Converters"
              xmlns:controls="clr-namespace:Medical_atention.Controls"
              x:Class="Medical_atention.Views.TriagePage"
-             BackgroundColor="#F0F4F8"
              Title="Triaje">
 
     <ContentPage.Resources>
@@ -25,21 +24,17 @@
             <Grid>
                 <ActivityIndicator IsRunning="{Binding IsLoading}"
                                    IsVisible="{Binding IsLoading}"
-                                   Color="#2C7BE5"
                                    VerticalOptions="Center"
                                    HorizontalOptions="Center" />
 
-                <StackLayout IsVisible="{Binding IsEmpty}"
-                             VerticalOptions="Center"
-                             HorizontalOptions="Center"
-                             Padding="24"
-                             Spacing="8">
-                    <Label Text="No hay pacientes para triaje"
-                           FontSize="16"
-                           FontAttributes="Bold"
-                           TextColor="#718096"
-                           HorizontalTextAlignment="Center" />
-                </StackLayout>
+                <!-- Estado vacío -->
+                <controls:EmptyStateView
+                    IsVisible="{Binding IsEmpty}"
+                    Icon="⚕"
+                    Title="No hay pacientes para triaje"
+                    Subtitle="Los pacientes aparecerán aquí cuando se registren"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center" />
 
                 <CollectionView x:Name="TriageList"
                               ItemsSource="{Binding Groups}"
@@ -66,15 +61,15 @@
                                 <SwipeView.RightItems>
                                     <SwipeItems Mode="Reveal">
                                         <SwipeItem Text="Prioridad"
-                                                   BackgroundColor="#2C7BE5"
+                                                   BackgroundColor="{StaticResource PrimaryColor}"
                                                    Invoked="OnSwipePriorityInvoked" />
                                     </SwipeItems>
                                 </SwipeView.RightItems>
-                                <Frame BorderColor="#CBD5E0"
+                                <Frame BorderColor="{AppThemeBinding Light=#CBD5E0, Dark=#4A5568}"
                                        CornerRadius="8"
                                        Padding="12"
                                        HasShadow="False"
-                                       BackgroundColor="White"
+                                       BackgroundColor="{AppThemeBinding Light=White, Dark=#2D3748}"
                                        Margin="16,4,16,4">
                                     <StackLayout Spacing="4">
                                         <Grid ColumnDefinitions="*,Auto">
@@ -82,7 +77,7 @@
                                                    Text="{Binding FullName}"
                                                    FontSize="15"
                                                    FontAttributes="Bold"
-                                                   TextColor="#1A365D" />
+                                                   TextColor="{AppThemeBinding Light=#1A365D, Dark=#E2E8F0}" />
                                             <Frame Grid.Column="1"
                                                    Padding="8,2"
                                                    CornerRadius="12"
@@ -98,15 +93,14 @@
                                             </Frame>
                                         </Grid>
                                         <Label Text="{Binding IdentificationNumber, StringFormat='Cédula: {0}'}"
-                                               FontSize="12"
-                                               TextColor="#718096" />
+                                               Style="{StaticResource CaptionStyle}" />
                                         <Label Text="{Binding LastConsultationText}"
                                                FontSize="12"
-                                               TextColor="#4A5568" />
+                                               TextColor="{AppThemeBinding Light=#4A5568, Dark=#A0AEC0}" />
                                         <Button Text="Registrar consulta"
                                                 FontSize="12"
-                                                BackgroundColor="#EBF8FF"
-                                                TextColor="#2C7BE5"
+                                                BackgroundColor="{StaticResource PrimaryLightColor}"
+                                                TextColor="{StaticResource PrimaryColor}"
                                                 CornerRadius="6"
                                                 Padding="8,4"
                                                 HorizontalOptions="Start"
@@ -124,12 +118,8 @@
                VerticalOptions="End"
                HorizontalOptions="FillAndExpand"
                IsVisible="{Binding IsSnackbarVisible}"
-               BackgroundColor="#2D3748"
-               CornerRadius="8"
-               Padding="16,12"
-               Margin="16,0,16,16"
-               HasShadow="True"
-               BorderColor="Transparent">
+               Style="{StaticResource SnackbarFrameStyle}"
+               Margin="16,0,16,16">
             <Label Text="{Binding SnackbarMessage}"
                    TextColor="White"
                    FontSize="13"

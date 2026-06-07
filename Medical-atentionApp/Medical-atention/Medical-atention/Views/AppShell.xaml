@@ -5,12 +5,12 @@
        x:Class="Medical_atention.Views.AppShell"
        FlyoutBehavior="Flyout"
        Shell.NavBarIsVisible="True"
-       Shell.TabBarBackgroundColor="White"
-       Shell.TabBarTitleColor="#2196F3"
-       Shell.TabBarUnselectedColor="#757575">
+       Shell.TabBarBackgroundColor="{AppThemeBinding Light=White, Dark=#1A202C}"
+       Shell.TabBarTitleColor="#2C7BE5"
+       Shell.TabBarUnselectedColor="#718096">
 
     <Shell.FlyoutHeader>
-        <StackLayout Padding="16,40,16,16" BackgroundColor="#2196F3" Spacing="4">
+        <StackLayout Padding="16,40,16,16" BackgroundColor="#2C7BE5" Spacing="4">
             <Label x:Name="FlyoutUserName"
                    Text="Usuario"
                    FontSize="18"

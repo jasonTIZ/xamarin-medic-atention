@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:Medical_atention.Controls"
              x:Class="Medical_atention.Views.PatientDetailPage"
-             BackgroundColor="#F0F4F8"
              Title="Detalle del paciente">
 
     <Grid RowDefinitions="Auto,*,Auto">
@@ -14,123 +13,93 @@
 
                 <ActivityIndicator IsRunning="{Binding IsLoading}"
                                    IsVisible="{Binding IsLoading}"
-                                   Color="#2C7BE5"
                                    Margin="0,40,0,0" />
 
                 <StackLayout IsVisible="{Binding IsNotLoading}">
 
                     <Label Text="Nombre"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#4A5568"
+                           Style="{StaticResource FieldLabelStyle}"
                            Margin="0,0,0,4" />
-                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                           Padding="16,12" HasShadow="False"
-                           BackgroundColor="White"
-                           Margin="0,0,0,16">
+                    <Frame Style="{StaticResource InputFrameStyle}" Padding="16,12" Margin="0,0,0,16">
                         <StackLayout>
                             <Label Text="{Binding Name}"
                                    IsVisible="{Binding IsReadOnly}"
-                                   TextColor="#1A365D" FontSize="15" />
+                                   Style="{StaticResource BodyStyle}" />
                             <Entry Text="{Binding Name}"
-                                   IsVisible="{Binding IsEditing}"
-                                   TextColor="#1A365D"
-                                   BackgroundColor="Transparent" />
+                                   IsVisible="{Binding IsEditing}" />
                         </StackLayout>
                     </Frame>
 
                     <Label Text="Apellido"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#4A5568"
+                           Style="{StaticResource FieldLabelStyle}"
                            Margin="0,0,0,4" />
-                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                           Padding="16,12" HasShadow="False"
-                           BackgroundColor="White"
-                           Margin="0,0,0,16">
+                    <Frame Style="{StaticResource InputFrameStyle}" Padding="16,12" Margin="0,0,0,16">
                         <StackLayout>
                             <Label Text="{Binding LastName}"
                                    IsVisible="{Binding IsReadOnly}"
-                                   TextColor="#1A365D" FontSize="15" />
+                                   Style="{StaticResource BodyStyle}" />
                             <Entry Text="{Binding LastName}"
-                                   IsVisible="{Binding IsEditing}"
-                                   TextColor="#1A365D"
-                                   BackgroundColor="Transparent" />
+                                   IsVisible="{Binding IsEditing}" />
                         </StackLayout>
                     </Frame>
 
                     <Label Text="Cédula"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#4A5568"
+                           Style="{StaticResource FieldLabelStyle}"
                            Margin="0,0,0,4" />
-                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                           Padding="16,12" HasShadow="False"
-                           BackgroundColor="White"
-                           Margin="0,0,0,16">
+                    <Frame Style="{StaticResource InputFrameStyle}" Padding="16,12" Margin="0,0,0,16">
                         <StackLayout>
                             <Label Text="{Binding IdentificationNumber}"
                                    IsVisible="{Binding IsReadOnly}"
-                                   TextColor="#1A365D" FontSize="15" />
+                                   Style="{StaticResource BodyStyle}" />
                             <Entry Text="{Binding IdentificationNumber}"
                                    IsVisible="{Binding IsEditing}"
-                                   Keyboard="Numeric"
-                                   TextColor="#1A365D"
-                                   BackgroundColor="Transparent" />
+                                   Keyboard="Numeric" />
                         </StackLayout>
                     </Frame>
 
                     <Label Text="Fecha de nacimiento"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#4A5568"
+                           Style="{StaticResource FieldLabelStyle}"
                            Margin="0,0,0,4" />
-                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                           Padding="16,12" HasShadow="False"
-                           BackgroundColor="White"
-                           Margin="0,0,0,16">
+                    <Frame Style="{StaticResource InputFrameStyle}" Padding="16,12" Margin="0,0,0,16">
                         <StackLayout>
                             <Label Text="{Binding DateOfBirth, StringFormat='{0:dd/MM/yyyy}'}"
                                    IsVisible="{Binding IsReadOnly}"
-                                   TextColor="#1A365D" FontSize="15" />
+                                   Style="{StaticResource BodyStyle}" />
                             <DatePicker Date="{Binding DateOfBirth}"
                                         IsVisible="{Binding IsEditing}"
                                         MaximumDate="{Binding MaxDateOfBirth}"
-                                        TextColor="#1A365D"
+                                        TextColor="{AppThemeBinding Light=#1A365D, Dark=#E2E8F0}"
                                         Format="dd/MM/yyyy" />
                         </StackLayout>
                     </Frame>
 
                     <Label Text="Género"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#4A5568"
+                           Style="{StaticResource FieldLabelStyle}"
                            Margin="0,0,0,4" />
-                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                           Padding="16,12" HasShadow="False"
-                           BackgroundColor="White"
-                           Margin="0,0,0,16">
+                    <Frame Style="{StaticResource InputFrameStyle}" Padding="16,12" Margin="0,0,0,16">
                         <StackLayout>
                             <Label Text="{Binding Gender}"
                                    IsVisible="{Binding IsReadOnly}"
-                                   TextColor="#1A365D" FontSize="15" />
+                                   Style="{StaticResource BodyStyle}" />
                             <Picker ItemsSource="{Binding Genders}"
                                     SelectedItem="{Binding SelectedGender}"
                                     IsVisible="{Binding IsEditing}"
-                                    TextColor="#1A365D" />
+                                    TextColor="{AppThemeBinding Light=#1A365D, Dark=#E2E8F0}" />
                         </StackLayout>
                     </Frame>
 
                     <Label Text="Registrado el"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#4A5568"
+                           Style="{StaticResource FieldLabelStyle}"
                            Margin="0,0,0,4" />
-                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                           Padding="16,12" HasShadow="False"
-                           BackgroundColor="White">
+                    <Frame Style="{StaticResource InputFrameStyle}" Padding="16,12">
                         <Label Text="{Binding CreatedAt, StringFormat='{0:dd/MM/yyyy HH:mm}'}"
-                               TextColor="#1A365D"
-                               FontSize="15" />
+                               Style="{StaticResource BodyStyle}" />
                     </Frame>
 
+                    <!-- Recordatorios -->
                     <Frame IsVisible="{Binding HasPendingReminders}"
-                           BorderColor="#F6AD55"
-                           BackgroundColor="#FFFAF0"
+                           BorderColor="{StaticResource WarningBorderColor}"
+                           BackgroundColor="{StaticResource WarningLightColor}"
                            CornerRadius="8"
                            Padding="16,12"
                            HasShadow="False"
@@ -138,13 +107,13 @@
                         <StackLayout Spacing="10">
                             <Label Text="Recordatorios de seguimiento"
                                    FontSize="13" FontAttributes="Bold"
-                                   TextColor="#C05621" />
+                                   TextColor="{StaticResource WarningTextColor}" />
                             <Label Text="{Binding ReminderInfoText}"
                                    FontSize="14"
-                                   TextColor="#7B341E" />
+                                   TextColor="{StaticResource WarningDarkTextColor}" />
                             <Button Text="Cancelar recordatorios"
                                     Command="{Binding CancelRemindersCommand}"
-                                    BackgroundColor="#DD6B20"
+                                    BackgroundColor="{StaticResource WarningOrangeColor}"
                                     TextColor="White"
                                     CornerRadius="8"
                                     FontAttributes="Bold"
@@ -158,7 +127,8 @@
                            Margin="0,12,0,0" />
 
                     <Label Text="{Binding ErrorMessage}"
-                           TextColor="#E53E3E" FontSize="13"
+                           Style="{StaticResource ErrorLabelStyle}"
+                           FontSize="13"
                            IsVisible="{Binding HasError}"
                            Margin="0,16,0,0" />
 
@@ -175,10 +145,7 @@
             <Button Text="Editar"
                     Command="{Binding EditCommand}"
                     IsVisible="{Binding ShowEditButton}"
-                    BackgroundColor="#2C7BE5"
-                    TextColor="White"
-                    CornerRadius="8"
-                    FontAttributes="Bold"
+                    Style="{StaticResource PrimaryButtonStyle}"
                     HeightRequest="48" />
 
             <Grid IsVisible="{Binding ShowSaveCancel}"
@@ -187,24 +154,16 @@
                 <Button Grid.Column="0"
                         Text="Cancelar"
                         Command="{Binding CancelCommand}"
-                        BackgroundColor="#E2E8F0"
-                        TextColor="#4A5568"
-                        CornerRadius="8"
-                        FontAttributes="Bold"
-                        HeightRequest="48" />
+                        Style="{StaticResource SecondaryButtonStyle}" />
                 <Button Grid.Column="1"
                         Text="Guardar"
                         Command="{Binding SaveCommand}"
-                        BackgroundColor="#2C7BE5"
-                        TextColor="White"
-                        CornerRadius="8"
-                        FontAttributes="Bold"
+                        Style="{StaticResource PrimaryButtonStyle}"
                         HeightRequest="48" />
             </Grid>
 
             <ActivityIndicator IsRunning="{Binding IsSaving}"
                                IsVisible="{Binding IsSaving}"
-                               Color="#2C7BE5"
                                HorizontalOptions="Center" />
 
         </StackLayout>

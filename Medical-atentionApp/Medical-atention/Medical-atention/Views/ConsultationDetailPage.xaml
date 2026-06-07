@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:Medical_atention.Controls"
              x:Class="Medical_atention.Views.ConsultationDetailPage"
-             BackgroundColor="#F0F4F8"
              Title="Detalle de consulta">
 
     <Grid RowDefinitions="Auto,*,Auto">
@@ -14,15 +13,14 @@
 
                 <ActivityIndicator IsRunning="{Binding IsLoading}"
                                    IsVisible="{Binding IsLoading}"
-                                   Color="#2C7BE5"
                                    Margin="0,40,0,0" />
 
                 <StackLayout IsVisible="{Binding IsNotLoading}" Spacing="0">
 
                     <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,20">
                         <Label Text="{Binding DateDisplay}"
+                               Style="{StaticResource CaptionStyle}"
                                FontSize="14"
-                               TextColor="#718096"
                                VerticalOptions="Center" />
                         <controls:PriorityBadgeView Grid.Column="1"
                                                     Priority="{Binding Priority}"
@@ -31,105 +29,76 @@
                     </Grid>
 
                     <Label Text="Diagnóstico"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#4A5568"
+                           Style="{StaticResource FieldLabelStyle}"
                            Margin="0,0,0,4" />
-                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                           Padding="16,12" HasShadow="False"
-                           BackgroundColor="White"
-                           Margin="0,0,0,16">
+                    <Frame Style="{StaticResource InputFrameStyle}" Padding="16,12" Margin="0,0,0,16">
                         <Label Text="{Binding Diagnosis}"
                                FontSize="15" FontAttributes="Bold"
-                               TextColor="#1A202C" />
+                               TextColor="{AppThemeBinding Light=#1A202C, Dark=#E2E8F0}" />
                     </Frame>
 
                     <Label Text="Síntomas"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#4A5568"
+                           Style="{StaticResource FieldLabelStyle}"
                            Margin="0,0,0,4" />
-                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                           Padding="16,12" HasShadow="False"
-                           BackgroundColor="White"
-                           Margin="0,0,0,16">
-                        <Label Text="{Binding Symptoms}"
-                               FontSize="15"
-                               TextColor="#1A365D" />
+                    <Frame Style="{StaticResource InputFrameStyle}" Padding="16,12" Margin="0,0,0,16">
+                        <Label Text="{Binding Symptoms}" Style="{StaticResource BodyStyle}" />
                     </Frame>
 
                     <Label Text="Tratamiento"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#4A5568"
+                           Style="{StaticResource FieldLabelStyle}"
                            Margin="0,0,0,4" />
-                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                           Padding="16,12" HasShadow="False"
-                           BackgroundColor="White"
-                           Margin="0,0,0,16">
+                    <Frame Style="{StaticResource InputFrameStyle}" Padding="16,12" Margin="0,0,0,16">
                         <StackLayout>
                             <Label Text="{Binding TreatmentReadOnly}"
                                    IsVisible="{Binding IsReadOnly}"
-                                   FontSize="15"
-                                   TextColor="#1A365D" />
+                                   Style="{StaticResource BodyStyle}" />
                             <Editor Text="{Binding Treatment}"
                                     IsVisible="{Binding IsEditing}"
                                     AutoSize="TextChanges"
                                     MinimumHeightRequest="80"
-                                    TextColor="#1A365D"
-                                    Placeholder="Tratamiento indicado"
-                                    PlaceholderColor="#A0AEC0"
-                                    BackgroundColor="Transparent" />
+                                    Placeholder="Tratamiento indicado" />
                         </StackLayout>
                     </Frame>
 
                     <Label Text="Notas"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#4A5568"
+                           Style="{StaticResource FieldLabelStyle}"
                            Margin="0,0,0,4" />
-                    <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                           Padding="16,12" HasShadow="False"
-                           BackgroundColor="White"
-                           Margin="0,0,0,8">
+                    <Frame Style="{StaticResource InputFrameStyle}" Padding="16,12" Margin="0,0,0,8">
                         <StackLayout>
                             <Label Text="{Binding NotesReadOnly}"
                                    IsVisible="{Binding IsReadOnly}"
-                                   FontSize="15"
-                                   TextColor="#1A365D" />
+                                   Style="{StaticResource BodyStyle}" />
                             <Editor Text="{Binding Notes}"
                                     IsVisible="{Binding IsEditing}"
                                     AutoSize="TextChanges"
                                     MinimumHeightRequest="80"
-                                    TextColor="#1A365D"
-                                    Placeholder="Notas adicionales"
-                                    PlaceholderColor="#A0AEC0"
-                                    BackgroundColor="Transparent" />
+                                    Placeholder="Notas adicionales" />
                         </StackLayout>
                     </Frame>
 
                     <Label Text="{Binding ErrorMessage}"
-                           TextColor="#E53E3E" FontSize="13"
+                           Style="{StaticResource ErrorLabelStyle}"
+                           FontSize="13"
                            IsVisible="{Binding HasError}"
                            Margin="0,8,0,0" />
 
-                    <!-- ── Imágenes adjuntas ── -->
+                    <!-- Imágenes adjuntas -->
                     <Grid ColumnDefinitions="*,Auto" Margin="0,20,0,6">
                         <Label Grid.Column="0"
                                Text="Imágenes adjuntas"
-                               FontSize="13" FontAttributes="Bold"
-                               TextColor="#4A5568"
+                               Style="{StaticResource FieldLabelStyle}"
                                VerticalOptions="Center" />
                         <Label Grid.Column="1"
                                Text="{Binding AttachmentCountLabel}"
-                               FontSize="12"
-                               TextColor="#718096"
+                               Style="{StaticResource CaptionStyle}"
                                VerticalOptions="Center" />
                     </Grid>
 
                     <ActivityIndicator IsRunning="{Binding IsLoadingAttachments}"
                                        IsVisible="{Binding IsLoadingAttachments}"
-                                       Color="#2C7BE5"
                                        HeightRequest="32"
                                        Margin="0,4,0,4" />
 
-                    <!-- Miniaturas -->
                     <CollectionView ItemsSource="{Binding Attachments}"
                                     IsVisible="{Binding HasAttachments}"
                                     HeightRequest="110"
@@ -138,12 +107,10 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid WidthRequest="96" HeightRequest="96" Margin="0,4,8,4">
-
-                                    <!-- Miniatura -->
                                     <Frame CornerRadius="8" Padding="0"
                                            IsClippedToBounds="True"
                                            HasShadow="False"
-                                           BorderColor="#CBD5E0">
+                                           BorderColor="{AppThemeBinding Light=#CBD5E0, Dark=#4A5568}">
                                         <Image Source="{Binding ThumbnailSource}"
                                                Aspect="AspectFill"
                                                WidthRequest="96"
@@ -155,34 +122,28 @@
                                             </Image.GestureRecognizers>
                                         </Image>
                                     </Frame>
-
-                                    <!-- Barra de progreso -->
                                     <StackLayout IsVisible="{Binding ShowProgress}"
                                                  VerticalOptions="End"
                                                  BackgroundColor="#CC000000"
                                                  Padding="6,4">
                                         <ProgressBar Progress="{Binding UploadProgress}"
-                                                     ProgressColor="#2C7BE5"
+                                                     ProgressColor="{StaticResource PrimaryColor}"
                                                      HeightRequest="4" />
                                         <Label Text="{Binding UploadProgressText}"
                                                TextColor="White"
                                                FontSize="10"
                                                HorizontalOptions="Center" />
                                     </StackLayout>
-
-                                    <!-- Pending sync badge -->
                                     <Frame IsVisible="{Binding PendingSync}"
                                            CornerRadius="6"
                                            Padding="4,2"
-                                           BackgroundColor="#F6AD55"
+                                           BackgroundColor="{StaticResource WarningBorderColor}"
                                            HasShadow="False"
                                            HorizontalOptions="Start"
                                            VerticalOptions="Start"
                                            Margin="4">
                                         <Label Text="Offline" FontSize="9" TextColor="White" />
                                     </Frame>
-
-                                    <!-- Botón eliminar -->
                                     <Button Text="&#x2715;"
                                             TextColor="White"
                                             BackgroundColor="#CC000000"
@@ -196,40 +157,26 @@
                                             Margin="0,4,4,0"
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteAttachmentCommand}"
                                             CommandParameter="{Binding .}" />
-
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
 
-                    <!-- Botones agregar foto -->
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8"
                           IsVisible="{Binding CanAddAttachment}"
                           Margin="0,0,0,4">
                         <Button Grid.Column="0"
                                 Text="&#x1F4F7; Cámara"
                                 Command="{Binding AddFromCameraCommand}"
-                                BackgroundColor="#EBF8FF"
-                                TextColor="#2C7BE5"
-                                BorderColor="#BEE3F8"
-                                BorderWidth="1"
-                                CornerRadius="8"
-                                FontSize="13"
-                                HeightRequest="40" />
+                                Style="{StaticResource OutlineButtonStyle}" />
                         <Button Grid.Column="1"
                                 Text="&#x1F5BC; Galería"
                                 Command="{Binding AddFromGalleryCommand}"
-                                BackgroundColor="#EBF8FF"
-                                TextColor="#2C7BE5"
-                                BorderColor="#BEE3F8"
-                                BorderWidth="1"
-                                CornerRadius="8"
-                                FontSize="13"
-                                HeightRequest="40" />
+                                Style="{StaticResource OutlineButtonStyle}" />
                     </Grid>
 
                     <Label Text="{Binding AttachmentError}"
-                           TextColor="#E53E3E" FontSize="12"
+                           Style="{StaticResource ErrorLabelStyle}"
                            IsVisible="{Binding HasAttachmentError}"
                            Margin="0,4,0,0" />
 
@@ -246,10 +193,7 @@
             <Button Text="Editar"
                     Command="{Binding EditCommand}"
                     IsVisible="{Binding ShowEditButton}"
-                    BackgroundColor="#2C7BE5"
-                    TextColor="White"
-                    CornerRadius="8"
-                    FontAttributes="Bold"
+                    Style="{StaticResource PrimaryButtonStyle}"
                     HeightRequest="48" />
 
             <Grid IsVisible="{Binding ShowSaveCancel}"
@@ -258,24 +202,16 @@
                 <Button Grid.Column="0"
                         Text="Cancelar"
                         Command="{Binding CancelCommand}"
-                        BackgroundColor="#E2E8F0"
-                        TextColor="#4A5568"
-                        CornerRadius="8"
-                        FontAttributes="Bold"
-                        HeightRequest="48" />
+                        Style="{StaticResource SecondaryButtonStyle}" />
                 <Button Grid.Column="1"
                         Text="Guardar"
                         Command="{Binding SaveCommand}"
-                        BackgroundColor="#2C7BE5"
-                        TextColor="White"
-                        CornerRadius="8"
-                        FontAttributes="Bold"
+                        Style="{StaticResource PrimaryButtonStyle}"
                         HeightRequest="48" />
             </Grid>
 
             <ActivityIndicator IsRunning="{Binding IsSaving}"
                                IsVisible="{Binding IsSaving}"
-                               Color="#2C7BE5"
                                HorizontalOptions="Center" />
 
         </StackLayout>

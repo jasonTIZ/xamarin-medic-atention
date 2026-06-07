@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:Medical_atention.Controls"
              x:Class="Medical_atention.Views.RegisterConsultationPage"
-             BackgroundColor="#F0F4F8"
              Title="Nueva Consulta">
 
     <Grid RowDefinitions="Auto,*">
@@ -14,24 +13,18 @@
             <StackLayout Padding="24,20,24,100" Spacing="0">
 
                 <Label Text="{Binding PatientDisplayLine}"
-                       FontSize="14"
-                       TextColor="#4A5568"
+                       Style="{StaticResource BodySecondaryStyle}"
                        Margin="0,0,0,20" />
 
                 <Label Text="Fecha y Hora de la Consulta"
-                       FontSize="13" FontAttributes="Bold"
-                       TextColor="#4A5568"
+                       Style="{StaticResource FieldLabelStyle}"
                        Margin="0,0,0,6" />
-                <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                       Padding="14,12" HasShadow="False"
-                       BackgroundColor="White"
-                       Margin="0,0,0,6">
+                <Frame Style="{StaticResource InputFrameStyle}" Padding="14,12" Margin="0,0,0,6">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackLayout Grid.Column="0" Spacing="8"
                                      IsVisible="{Binding IsDateTimeReadOnly}">
                             <Label Text="{Binding ConsultationDateTimeDisplay}"
-                                   FontSize="15"
-                                   TextColor="#1A365D"
+                                   Style="{StaticResource BodyStyle}"
                                    VerticalOptions="Center" />
                         </StackLayout>
                         <Label Grid.Column="1"
@@ -44,15 +37,15 @@
                                      Spacing="8">
                             <DatePicker Date="{Binding ConsultationDate}"
                                         Format="dd/MM/yyyy"
-                                        TextColor="#1A365D" />
+                                        TextColor="{AppThemeBinding Light=#1A365D, Dark=#E2E8F0}" />
                             <TimePicker Time="{Binding ConsultationTime}"
-                                        TextColor="#1A365D" />
+                                        TextColor="{AppThemeBinding Light=#1A365D, Dark=#E2E8F0}" />
                         </StackLayout>
                     </Grid>
                 </Frame>
                 <Label Text="Editar fecha/hora"
                        FontSize="13"
-                       TextColor="#2C7BE5"
+                       TextColor="{StaticResource PrimaryColor}"
                        Margin="0,0,0,20">
                     <Label.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding ToggleEditDateTimeCommand}" />
@@ -60,8 +53,7 @@
                 </Label>
 
                 <Label Text="Prioridad"
-                       FontSize="13" FontAttributes="Bold"
-                       TextColor="#4A5568"
+                       Style="{StaticResource FieldLabelStyle}"
                        Margin="0,0,0,8" />
                 <StackLayout Orientation="Horizontal"
                              Spacing="8"
@@ -70,7 +62,7 @@
                     <BindableLayout.ItemTemplate>
                         <DataTemplate>
                             <Frame BorderColor="{Binding BorderColor}"
-                                   BackgroundColor="White"
+                                   BackgroundColor="{AppThemeBinding Light=White, Dark=#2D3748}"
                                    CornerRadius="20"
                                    Padding="4,6"
                                    HasShadow="False"
@@ -88,98 +80,62 @@
                 </StackLayout>
 
                 <StackLayout Orientation="Horizontal" Spacing="2" Margin="0,0,0,4">
-                    <Label Text="Síntomas"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#4A5568" />
-                    <Label Text="*"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#E53E3E" />
+                    <Label Text="Síntomas" Style="{StaticResource FieldLabelStyle}" />
+                    <Label Text="*" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource ErrorColor}" />
                 </StackLayout>
-                <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                       Padding="12,8" HasShadow="False"
-                       BackgroundColor="White"
-                       Margin="0,0,0,4">
+                <Frame Style="{StaticResource InputFrameStyle}" Padding="12,8" Margin="0,0,0,4">
                     <Editor Text="{Binding Symptoms}"
                             Placeholder="Describa los síntomas del paciente"
                             AutoSize="TextChanges"
-                            MinimumHeightRequest="120"
-                            TextColor="#1A365D"
-                            PlaceholderColor="#A0AEC0"
-                            BackgroundColor="Transparent" />
+                            MinimumHeightRequest="120" />
                 </Frame>
                 <Label Text="{Binding SymptomsError}"
-                       TextColor="#E53E3E" FontSize="12"
+                       Style="{StaticResource ErrorLabelStyle}"
                        IsVisible="{Binding HasSymptomsError}"
                        Margin="4,0,0,12" />
 
                 <StackLayout Orientation="Horizontal" Spacing="2" Margin="0,0,0,4">
-                    <Label Text="Diagnóstico"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#4A5568" />
-                    <Label Text="*"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#E53E3E" />
+                    <Label Text="Diagnóstico" Style="{StaticResource FieldLabelStyle}" />
+                    <Label Text="*" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource ErrorColor}" />
                 </StackLayout>
-                <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                       Padding="12,8" HasShadow="False"
-                       BackgroundColor="White"
-                       Margin="0,0,0,4">
+                <Frame Style="{StaticResource InputFrameStyle}" Padding="12,8" Margin="0,0,0,4">
                     <Editor Text="{Binding Diagnosis}"
                             Placeholder="Diagnóstico médico"
                             AutoSize="TextChanges"
-                            MinimumHeightRequest="90"
-                            TextColor="#1A365D"
-                            PlaceholderColor="#A0AEC0"
-                            BackgroundColor="Transparent" />
+                            MinimumHeightRequest="90" />
                 </Frame>
                 <Label Text="{Binding DiagnosisError}"
-                       TextColor="#E53E3E" FontSize="12"
+                       Style="{StaticResource ErrorLabelStyle}"
                        IsVisible="{Binding HasDiagnosisError}"
                        Margin="4,0,0,16" />
 
                 <Label Text="Tratamiento"
-                       FontSize="13" FontAttributes="Bold"
-                       TextColor="#4A5568"
+                       Style="{StaticResource FieldLabelStyle}"
                        Margin="0,0,0,4" />
-                <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                       Padding="12,0" HasShadow="False"
-                       BackgroundColor="White"
-                       Margin="0,0,0,16">
+                <Frame Style="{StaticResource InputFrameStyle}" Margin="0,0,0,16">
                     <Entry Text="{Binding Treatment}"
-                           Placeholder="Tratamiento indicado"
-                           TextColor="#1A365D"
-                           PlaceholderColor="#A0AEC0"
-                           BackgroundColor="Transparent" />
+                           Placeholder="Tratamiento indicado" />
                 </Frame>
 
                 <Label Text="Notas"
-                       FontSize="13" FontAttributes="Bold"
-                       TextColor="#4A5568"
+                       Style="{StaticResource FieldLabelStyle}"
                        Margin="0,0,0,4" />
-                <Frame BorderColor="#CBD5E0" CornerRadius="8"
-                       Padding="12,8" HasShadow="False"
-                       BackgroundColor="White"
-                       Margin="0,0,0,20">
+                <Frame Style="{StaticResource InputFrameStyle}" Padding="12,8" Margin="0,0,0,20">
                     <Editor Text="{Binding Notes}"
                             Placeholder="Notas adicionales"
                             AutoSize="TextChanges"
-                            MinimumHeightRequest="90"
-                            TextColor="#1A365D"
-                            PlaceholderColor="#A0AEC0"
-                            BackgroundColor="Transparent" />
+                            MinimumHeightRequest="90" />
                 </Frame>
 
-                <!-- ── Imágenes adjuntas ── -->
+                <!-- Imágenes adjuntas -->
                 <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
                     <Label Grid.Column="0"
                            Text="Imágenes adjuntas"
-                           FontSize="13" FontAttributes="Bold"
-                           TextColor="#4A5568"
+                           Style="{StaticResource FieldLabelStyle}"
                            VerticalOptions="Center" />
                     <Label Grid.Column="1"
                            Text="{Binding ImageCountLabel}"
-                           FontSize="12"
-                           TextColor="#718096"
+                           Style="{StaticResource CaptionStyle}"
                            VerticalOptions="Center" />
                 </Grid>
 
@@ -194,7 +150,7 @@
                                 <Frame CornerRadius="8" Padding="0"
                                        IsClippedToBounds="True"
                                        HasShadow="False"
-                                       BorderColor="#CBD5E0">
+                                       BorderColor="{AppThemeBinding Light=#CBD5E0, Dark=#4A5568}">
                                     <Image Source="{Binding Source}"
                                            Aspect="AspectFill"
                                            WidthRequest="96"
@@ -224,67 +180,44 @@
                     <Button Grid.Column="0"
                             Text="&#x1F4F7; Cámara"
                             Command="{Binding AddFromCameraCommand}"
-                            BackgroundColor="#EBF8FF"
-                            TextColor="#2C7BE5"
-                            BorderColor="#BEE3F8"
-                            BorderWidth="1"
-                            CornerRadius="8"
-                            FontSize="13"
-                            HeightRequest="40" />
+                            Style="{StaticResource OutlineButtonStyle}" />
                     <Button Grid.Column="1"
                             Text="&#x1F5BC; Galería"
                             Command="{Binding AddFromGalleryCommand}"
-                            BackgroundColor="#EBF8FF"
-                            TextColor="#2C7BE5"
-                            BorderColor="#BEE3F8"
-                            BorderWidth="1"
-                            CornerRadius="8"
-                            FontSize="13"
-                            HeightRequest="40" />
+                            Style="{StaticResource OutlineButtonStyle}" />
                 </Grid>
 
                 <Label Text="{Binding AttachmentError}"
-                       TextColor="#E53E3E" FontSize="12"
+                       Style="{StaticResource ErrorLabelStyle}"
                        IsVisible="{Binding HasAttachmentError}"
                        Margin="0,0,0,12" />
 
                 <Frame IsVisible="{Binding HasGeneralError}"
-                       BackgroundColor="#FFF5F5"
-                       BorderColor="#FEB2B2"
-                       CornerRadius="8"
-                       Padding="12,10"
-                       Margin="0,0,0,12"
-                       HasShadow="False">
+                       Style="{StaticResource ErrorFrameStyle}"
+                       Margin="0,0,0,12">
                     <Label Text="{Binding GeneralError}"
-                           TextColor="#C53030"
+                           TextColor="{StaticResource ErrorDarkColor}"
                            FontSize="14"
                            HorizontalOptions="Center" />
                 </Frame>
 
                 <Button Text="GUARDAR CONSULTA"
                         Command="{Binding RegisterCommand}"
-                        BackgroundColor="#2C7BE5"
-                        TextColor="White"
-                        CornerRadius="8"
-                        FontAttributes="Bold"
+                        Style="{StaticResource PrimaryButtonStyle}"
                         FontSize="15"
                         HeightRequest="52"
                         CharacterSpacing="0.5" />
 
                 <ActivityIndicator IsRunning="{Binding IsLoading}"
                                    IsVisible="{Binding IsLoading}"
-                                   Color="#2C7BE5"
                                    Margin="0,16,0,0" />
 
             </StackLayout>
         </ScrollView>
 
         <Frame IsVisible="{Binding IsSnackbarVisible}"
-               BackgroundColor="#323232"
-               CornerRadius="8"
-               Padding="16,12"
+               Style="{StaticResource SnackbarFrameStyle}"
                Margin="20,0,20,88"
-               HasShadow="True"
                VerticalOptions="End"
                HorizontalOptions="Fill">
             <Label Text="{Binding SnackbarMessage}"
