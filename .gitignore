@@ -78,7 +78,7 @@ crash.*.log
 
 # Node (si usas alguna herramienta JS)
 node_modules/
-docs/
+
 
 # ASP.NET Core / .NET Web API
 publish/
